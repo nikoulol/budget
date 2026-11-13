@@ -188,8 +188,21 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .empty b{font-family:var(--hand);font-size:calc(23px * var(--hs));color:var(--ink);display:block;font-weight:700;line-height:1.1}
 
 /* memories */
-.memhead{display:flex;align-items:center;justify-content:space-between;margin-top:22px}
+.memhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px}
+.lockbtn{flex:none;height:42px;padding:0 16px 0 13px;border-radius:14px;background:#FFE1EB;color:#B3285A;box-shadow:inset 0 0 0 1.5px #F2A3BE;
+  font-weight:var(--wb);font-size:15px;display:inline-flex;align-items:center;gap:7px;transition:transform .18s var(--spring),background .2s}
+.lockbtn:active{transform:scale(.94);background:#FFD0DF}
+.lockbtn .shackle{transition:transform .25s var(--ease-out);transform-origin:16px 11px}
+.lockbtn:active .shackle{transform:translateY(1.5px)}
+.memsub{margin:6px 4px 14px;font-size:13px;color:var(--ink-2)}
+.starters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.starter{aspect-ratio:9/16;max-width:100%;border-radius:14px;background:var(--c-bg);border:2px dashed color-mix(in srgb,var(--c) 40%,transparent);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--c);font-size:12.5px;font-weight:var(--w);transition:transform .18s var(--spring)}
+.starter:active{transform:scale(.95)}
+.starter .art{width:42px;height:42px}
+.starter .plus{width:26px;height:26px;border-radius:50%;background:#fff;display:grid;place-items:center;margin-top:2px}
 .memhead h2{margin:0 4px}
+#memList .empty{margin-bottom:4px}
 .pill{height:36px;padding:0 14px;border-radius:12px;background:var(--paper-3);font-size:14px;display:inline-flex;align-items:center;gap:6px;transition:transform .16s var(--ease-out)}
 .pill:active{transform:scale(.94)}
 .month{font-family:var(--hand);font-size:calc(24px * var(--hs));font-weight:700;margin:18px 4px 8px;display:flex;align-items:baseline;gap:8px}
@@ -394,8 +407,9 @@ input[type=date].field{width:150px;padding:0 10px}
   <div id="memView" hidden>
     <div class="memhead">
       <h2 class="hand"><span class="dd" id="ddHeart2"></span>Memories</h2>
-      <button class="pill" id="lockBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="3" fill="currentColor"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Lock</button>
+      <button class="lockbtn" id="lockBtn" aria-label="Lock memories now"><svg class="shackle-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="3" fill="currentColor"/><path class="shackle" d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Lock now</button>
     </div>
+    <p class="memsub">Private to this phone. Locks when you leave the app.</p>
     <div id="memList"></div>
   </div>
 </div>
@@ -1202,7 +1216,13 @@ async function renderMem(){
   try{ memCache = (await memAll()).sort((a,b) => b.date.localeCompare(a.date) || b.ts - a.ts); }
   catch(e){ $('memList').innerHTML = `<div class="empty"><div><b>Photos can't be saved here</b>This browser blocks storage. Try opening it in Chrome or Safari normally.</div></div>`; return; }
   if(!memCache.length){
-    $('memList').innerHTML = `<div class="empty enter" style="background:#FFE1EB">${ART.dates}<div><b>No memories yet</b>Add a photo from a coffee run, a date, a hangout or a film. Only you can open this tab.</div></div>`;
+    const now = today();
+    $('memList').innerHTML = `<div class="empty enter" style="background:#FFE1EB">${ART.dates}<div><b>No memories yet</b>Pick what you want to remember first.</div></div>
+      <div class="month">${MONTH[now.getMonth()]} ${now.getFullYear()} <small>0 memories</small></div>
+      <div class="starters">${KINDS.map((k, i) => { const c = catOf(k.id); return `<button class="starter enter" style="--i:${i + 1};--c:${c.c};--c-bg:${c.bg}" data-k="${k.id}" aria-label="Add a ${k.label.toLowerCase()} memory">
+        <span class="art">${ART[k.id]}</span><span class="lbl">${k.label}</span>
+        <span class="plus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>`; }).join('')}</div>`;
+    $('memList').querySelectorAll('.starter').forEach(b => b.onclick = () => openMemSheet({kind:b.dataset.k}));
     return;
   }
   const groups = {};
