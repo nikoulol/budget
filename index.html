@@ -526,12 +526,15 @@ const BUILTIN = [
   {id:'dates',     name:'Dates',                short:'Dates',      want:true,  c:'#C42F62', bg:'#FFE1EB', chips:[300,500,800,1200]},
   {id:'toiletries',name:'Toiletries',           short:'Toiletries', want:false, c:'#237F59', bg:'#DBF5E8', chips:[50,100,150,250]},
   {id:'clothes',   name:'Shirts / jeans',       short:'Clothes',    want:true,  c:'#6E4FCB', bg:'#ECE5FF', chips:[250,400,600,1000]},
+  {id:'hangouts',  name:'Hangouts',             short:'Hangouts',   want:true,  c:'#A85400', bg:'#FFEBD2', chips:[200,500,800,1500]},
+  {id:'films',     name:'Films',                short:'Films',      want:true,  c:'#1F6F8B', bg:'#DDF1F7', chips:[150,300,450,600]},
+  {id:'vices',     name:'Vices',                short:'Vices',      want:true,  c:'#575A78', bg:'#E9EAF3', chips:[50,120,180,350]},
 ];
 const PALETTE = [
   {c:'#0F7C86', bg:'#D6F3F5'}, {c:'#B5530F', bg:'#FFE8D3'}, {c:'#5E7A12', bg:'#ECF5D2'},
   {c:'#3F4FC4', bg:'#E3E7FF'}, {c:'#B23A48', bg:'#FFE0E4'}, {c:'#4A5568', bg:'#E8ECF2'},
 ];
-const ART_CHOICES = ['gift','phone','health','bills','games','books','food','coffee','dates','transport','toiletries','clothes','savings','family','wallet'];
+const ART_CHOICES = ['gift','phone','health','bills','games','books','hangouts','films','vices','food','coffee','dates','transport','toiletries','clothes','savings','family','wallet'];
 const FONTS = [
   {id:'rounded', label:'Rounded', sans:'Nunito', hand:'Patrick Hand', w:800},
   {id:'doodle',  label:'Doodle',  sans:'Outfit', hand:'Gaegu', w:700},
@@ -878,7 +881,7 @@ $('saveBtn').onclick = () => {
   freshId = e.id;
   hideSheet(); render(); burst();
   const c = catOf(addCat);
-  if(addCat === 'coffee' || addCat === 'dates')
+  if(KINDS.some(k => k.id === addCat))
     toast(`${peso(n)} added to ${c.short}`, 'Add photo', () => openMemFlow({date, place:e.note, kind:addCat}));
   else
     toast(`${peso(n)} added to ${c.short}`, 'Undo', () => { state.entries = state.entries.filter(x => x.id !== e.id); save(); render(); });
@@ -1117,12 +1120,12 @@ function openMemFlow(pre){ if(memUnlocked) openMemSheet(pre); else askPin(() => 
 
 /* ---------- memories UI ---------- */
 let memCache = [];
-const KINDS = [{id:'coffee', label:'Coffee shop'}, {id:'dates', label:'Date'}];
+const KINDS = [{id:'coffee', label:'Coffee shop'}, {id:'dates', label:'Date'}, {id:'hangouts', label:'Hangout'}, {id:'films', label:'Film'}];
 async function renderMem(){
   try{ memCache = (await memAll()).sort((a,b) => b.date.localeCompare(a.date) || b.ts - a.ts); }
   catch(e){ $('memList').innerHTML = `<div class="empty"><div><b>Photos can't be saved here</b>This browser blocks storage. Try opening it in Chrome or Safari normally.</div></div>`; return; }
   if(!memCache.length){
-    $('memList').innerHTML = `<div class="empty enter" style="background:#FFE1EB">${ART.dates}<div><b>No memories yet</b>Add a photo from a coffee run or a date. Only you can open this tab.</div></div>`;
+    $('memList').innerHTML = `<div class="empty enter" style="background:#FFE1EB">${ART.dates}<div><b>No memories yet</b>Add a photo from a coffee run, a date, a hangout or a film. Only you can open this tab.</div></div>`;
     return;
   }
   const groups = {};

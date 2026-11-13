@@ -197,6 +197,56 @@ const ART = {
       <path d="M40 52h8l-4 7z" fill="#F7E3C1"/><path d="M42.6 56.5h2.8L44 59z" fill="#24306E"/>
     </g>
   `),
+  vices: svg(`
+    <circle cx="44" cy="17" r="9" fill="#C9CEE0"/>
+    <circle cx="53" cy="23" r="6.5" fill="#C9CEE0"/>
+    <circle cx="36" cy="22" r="6" fill="#DCE0EC"/>
+    <circle cx="46" cy="14" r="5" fill="#fff"/>
+    <circle cx="51" cy="10" r="2.4" fill="#DCE0EC"/>
+    <g transform="rotate(-24 28 38)">
+      <rect x="23" y="14" width="9" height="9" rx="3.5" fill="#24306E"/>
+      <rect x="20" y="21" width="15" height="34" rx="6" fill="#8A8DAA"/>
+      <path d="M28 21h1a6 6 0 0 1 6 6v22a6 6 0 0 1-6 6h-1z" fill="#6C6F90"/>
+      <rect x="24" y="31" width="7" height="4" rx="2" fill="#8EC3F0"/>
+      <circle cx="27.5" cy="44" r="2" fill="#FFD66B"/>
+      <ellipse cx="23.5" cy="28" rx="1.3" ry="4" fill="#fff" opacity=".5"/>
+    </g>
+  `),
+  hangouts: svg(`
+    <path d="M32 6l1.6 4.4 4.4 1.6-4.4 1.6L32 18l-1.6-4.4L26 12l4.4-1.6z" fill="#FFD66B"/>
+    <g transform="rotate(-12 24 38)">
+      <path d="M26 21 L31 8" stroke="#FF6B5B" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M13 21h20l-2.6 29a4 4 0 0 1-4 3.6h-6.8a4 4 0 0 1-4-3.6z" fill="#FFB547"/>
+      <path d="M27 21h6l-2.6 29a4 4 0 0 1-4 3.6h-1.4c4-2 3-12 2-32.6z" fill="#F29A2E"/>
+      <ellipse cx="23" cy="21" rx="10" ry="3" fill="#FFE59E"/>
+      <rect x="17" y="27" width="6" height="6" rx="1.8" fill="#fff" opacity=".75"/>
+    </g>
+    <g transform="rotate(12 41 38)">
+      <path d="M38 21 L34 8" stroke="#5A9EDB" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M31 21h20l-2.6 29a4 4 0 0 1-4 3.6h-6.8a4 4 0 0 1-4-3.6z" fill="#7FD6B0"/>
+      <path d="M45 21h6l-2.6 29a4 4 0 0 1-4 3.6h-1.4c4-2 3-12 2-32.6z" fill="#4FB38A"/>
+      <ellipse cx="41" cy="21" rx="10" ry="3" fill="#C5E9DA"/>
+      <rect x="35" y="29" width="6" height="6" rx="1.8" fill="#fff" opacity=".75"/>
+    </g>
+  `),
+  films: svg(`
+    <g transform="rotate(-14 50 44)">
+      <rect x="40" y="37" width="20" height="13" rx="2.5" fill="#8EC3F0"/>
+      <circle cx="40" cy="43.5" r="2.4" fill="#FFFDF4"/><circle cx="60" cy="43.5" r="2.4" fill="#FFFDF4"/>
+      <path d="M45 40.5v6M55 40.5v6" stroke="#5A9EDB" stroke-width="1.4" stroke-dasharray="1.6 1.4"/>
+      <path d="M50 40.6l.9 1.9 2 .2-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.2z" fill="#FFE59E"/>
+    </g>
+    <circle cx="19" cy="27" r="5.5" fill="#FFF8E1"/><circle cx="26" cy="22" r="6.5" fill="#FFF8E1"/>
+    <circle cx="34" cy="23" r="6.5" fill="#FFF8E1"/><circle cx="41" cy="27" r="5.5" fill="#FFF8E1"/>
+    <circle cx="30" cy="16" r="5.5" fill="#FFF8E1"/><circle cx="22" cy="17" r="4" fill="#FFF8E1"/>
+    <circle cx="38" cy="18" r="4" fill="#FFF8E1"/>
+    <circle cx="27" cy="20" r="1.8" fill="#FFD66B"/><circle cx="35" cy="21" r="1.5" fill="#FFD66B"/><circle cx="31" cy="14" r="1.4" fill="#FFD66B"/>
+    <path d="M14 29h32l-4 25a3 3 0 0 1-3 2.6H21a3 3 0 0 1-3-2.6z" fill="#FF6B5B"/>
+    <path d="M20.5 29h5.5l.6 27.6h-5z M33.5 29h6l-2.4 27.6h-4.8z" fill="#fff"/>
+    <path d="M38 29h8l-4 25a3 3 0 0 1-3 2.6h-1.5c3-3 2-15 .5-27.6z" fill="#E0503F" opacity=".55"/>
+    <rect x="13" y="28" width="34" height="4" rx="2" fill="#E0503F"/>
+    <ellipse cx="18" cy="38" rx="1.3" ry="4" fill="#fff" opacity=".5"/>
+  `),
 };
 
 // Small doodles for headings and decoration
