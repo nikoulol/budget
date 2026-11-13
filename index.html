@@ -143,6 +143,21 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .fx .amt{font-size:21px;font-weight:var(--wb);font-variant-numeric:tabular-nums;color:var(--ink)}
 .fx .lock{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--paper);display:grid;place-items:center}
 
+.bills{display:flex;flex-direction:column;gap:8px}
+.bill{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:10px 14px 10px 10px;border-radius:18px;background:#DDF3E6}
+.bill .art{width:44px;height:44px}
+.bill .nm{font-weight:var(--w);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.2}
+.bill .due{font-size:13px;color:#237F59}
+.bill b{font-weight:var(--wb);font-size:17px;font-variant-numeric:tabular-nums}
+.billnote{display:block;width:100%;text-align:left;font-size:14px;color:var(--ink-2);padding:12px 14px;border-radius:16px;background:var(--paper-3);margin:0}
+.billnote.act{color:#237F59;background:#DDF3E6;font-weight:var(--w);transition:transform .16s var(--ease-out)}
+.billnote.act:active{transform:scale(.98)}
+.be{background:var(--paper-3);border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.be1{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.be2{display:grid;grid-template-columns:1fr 72px auto;gap:6px;align-items:center}
+.be .field{background:var(--paper);height:44px}
+.be .x{height:36px;padding:0 12px;border-radius:10px;background:#fff;color:var(--pink);font-size:13px}
+.be .chip{height:44px;min-width:76px}
 .cats{display:flex;flex-direction:column;gap:10px}
 .cat{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;
   padding:10px 14px 10px 10px;background:var(--c-bg);border-radius:22px;transition:transform .18s var(--ease-out)}
@@ -369,6 +384,8 @@ input[type=date].field{width:150px;padding:0 10px}
     <section class="hero" id="hero"></section>
     <h2 class="hand"><span class="dd" id="ddStar"></span>Set aside first <small>locked every cutoff</small></h2>
     <div class="fixed" id="fixed"></div>
+    <h2 class="hand"><span class="dd" id="ddBill"></span>Bills this period</h2>
+    <div class="bills" id="bills"></div>
     <h2 class="hand"><span class="dd" id="ddSpark"></span>Spending</h2>
     <div class="cats" id="cats"></div>
     <h2 class="hand"><span class="dd" id="ddHeart"></span>Logbook <span class="dd wide" id="ddSquig"></span></h2>
@@ -426,6 +443,10 @@ input[type=date].field{width:150px;padding:0 10px}
   <div class="grab"></div>
   <h3 id="setTitle">Settings</h3>
   <div class="form">
+    <label>Monthly bills</label>
+    <div id="billEdit"></div>
+    <button class="ghost" id="addBillBtn">Add a bill</button>
+    <p class="note">Due day is 1 to 31. Each bill is taken out once a month, in the pay period its due day falls in.</p>
     <label>Categories</label>
     <div class="catlist" id="catList"></div>
     <button class="ghost" id="addCatBtn">Add a category</button>
@@ -534,7 +555,7 @@ const PALETTE = [
   {c:'#0F7C86', bg:'#D6F3F5'}, {c:'#B5530F', bg:'#FFE8D3'}, {c:'#5E7A12', bg:'#ECF5D2'},
   {c:'#3F4FC4', bg:'#E3E7FF'}, {c:'#B23A48', bg:'#FFE0E4'}, {c:'#4A5568', bg:'#E8ECF2'},
 ];
-const ART_CHOICES = ['gift','phone','health','bills','games','books','hangouts','films','vices','food','coffee','dates','transport','toiletries','clothes','savings','family','wallet'];
+const ART_CHOICES = ['bill','gift','phone','health','bills','games','books','hangouts','films','vices','food','coffee','dates','transport','toiletries','clothes','savings','family','wallet'];
 const FONTS = [
   {id:'rounded', label:'Rounded', sans:'Nunito', hand:'Patrick Hand', w:800},
   {id:'doodle',  label:'Doodle',  sans:'Outfit', hand:'Gaegu', w:700},
@@ -543,11 +564,11 @@ const FONTS = [
 ];
 const FIXED_TOTAL = FIXED.reduce((s, f) => s + f.amount, 0);
 const KEY = 'cutoff-journal-v1';
-const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
+const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function normalize(d){
-  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
+  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
   delete s.budgets; delete s.memories; return s;
 }
 function load(){ try{ const raw = localStorage.getItem(KEY); if(raw) return normalize(JSON.parse(raw)); }catch(e){} return structuredClone(DEFAULTS); }
@@ -623,6 +644,15 @@ function whyMoved(key){
   const h = holidays(n.getFullYear()).get(iso(n));
   return `${MON[n.getMonth()]} ${n.getDate()} is ${h || (n.getDay() === 0 ? 'a Sunday' : 'a Saturday')}`;
 }
+function billDue(b, start, end){
+  if(!b.day || !(b.amount > 0)) return null;
+  for(let m = new Date(start.getFullYear(), start.getMonth(), 1); m <= end; m = new Date(m.getFullYear(), m.getMonth() + 1, 1)){
+    const d = new Date(m.getFullYear(), m.getMonth(), Math.min(b.day, lastDay(m.getFullYear(), m.getMonth())));
+    if(d >= start && d <= end) return d;
+  }
+  return null;
+}
+const billsIn = (start, end) => state.bills.map(b => ({...b, due:billDue(b, start, end)})).filter(b => b.due).sort((a, b) => a.due - b.due);
 const today = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
 let viewKey = cutKey(today());
 
@@ -645,7 +675,7 @@ function wobble(pct, color, h = 16, sw = 7, track = '#ECE5CB'){
 /* ---------- render: money ---------- */
 const $ = id => document.getElementById(id);
 $('scene').insertAdjacentHTML('afterbegin', sceneSVG());
-$('ddStar').innerHTML = DOODLE.star; $('ddSpark').innerHTML = DOODLE.sparkle;
+$('ddStar').innerHTML = DOODLE.star; $('ddBill').innerHTML = DOODLE.sparkle; $('ddSpark').innerHTML = DOODLE.sparkle;
 $('ddHeart').innerHTML = DOODLE.heart; $('ddHeart2').innerHTML = DOODLE.heart; $('ddSquig').innerHTML = DOODLE.squiggle;
 let shownRemaining = null, freshId = null, firstPaint = true;
 
@@ -657,7 +687,8 @@ function cutData(key){
   entries.forEach(x => { by[x.cat] = round2((by[x.cat] || 0) + x.amount); count[x.cat] = (count[x.cat] || 0) + 1; });
   const spent = round2(entries.reduce((a, x) => a + x.amount, 0));
   const pay = state.payOverrides[key] ?? state.pay;
-  return {start, end, entries, by, count, spent, pay, remaining: round2(pay - FIXED_TOTAL - spent)};
+  const bills = billsIn(start, end), billTotal = round2(bills.reduce((a, b) => a + b.amount, 0));
+  return {start, end, entries, by, count, spent, pay, bills, billTotal, remaining: round2(pay - FIXED_TOTAL - billTotal - spent)};
 }
 
 function countTo(el, from, to){
@@ -693,15 +724,15 @@ function render(){
   if(!d.pay){
     hero.innerHTML = `
       <div class="sticker">${ART.wallet}</div>
-      <p class="big"><span class="hl" id="remain">${peso(FIXED_TOTAL + d.spent)}</span><span class="hand">used so far</span></p>
+      <p class="big"><span class="hl" id="remain">${peso(FIXED_TOTAL + d.billTotal + d.spent)}</span><span class="hand">used so far</span></p>
       <button class="setpay ${enter}" id="setPayBtn">${ART.savings}
         <div><strong>Add your ${payName(viewKey)}</strong><span>Then this shows what's left from it.</span></div></button>`;
     $('setPayBtn').onclick = openPay;
     shownRemaining = null;
   } else {
-    const wants = round2(d.entries.filter(x => catOf(x.cat).want).reduce((s, x) => s + x.amount, 0));
-    const needs = round2(d.spent - wants);
-    const usedPct = (FIXED_TOTAL + d.spent) / d.pay * 100;
+    const wants = round2(d.entries.filter(x => catOf(x.cat).want).reduce((s, x) => s + x.amount, 0) + d.bills.filter(b => b.want).reduce((s, b) => s + b.amount, 0));
+    const needs = round2(d.spent + d.billTotal - wants);
+    const usedPct = (FIXED_TOTAL + d.billTotal + d.spent) / d.pay * 100;
     const daysLeft = isCur ? Math.round((d.end - t) / DAY) + 1 : 0;
     const perDay = isCur && d.remaining > 0 ? d.remaining / daysLeft : null;
     hero.innerHTML = `
@@ -728,6 +759,22 @@ function render(){
       <div class="amt">${peso(f.amount)}</div>
       <div class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#24306E" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="3" fill="#24306E"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span class="sr-only">Locked</span></div>
     </div>`).join('');
+
+  // bills due in this period
+  const unset = state.bills.filter(b => b.name && (!b.day || !(b.amount > 0)));
+  let bh = d.bills.map((b, i) => `<div class="bill ${enter}" style="--i:${i + 2}">
+      <div class="art">${ART.bill}</div>
+      <div class="bt"><div class="nm">${esc(b.name || 'Bill')}${b.want ? ' <span class="tag">wants</span>' : ''}</div>
+        <span class="due">${b.due < t ? `Paid ${MON[b.due.getMonth()]} ${b.due.getDate()}` : `Due ${dayName(b.due)}`}</span></div>
+      <b>${peso(b.amount)}</b></div>`).join('');
+  if(!d.bills.length && state.bills.some(b => b.day && b.amount > 0)){
+    const look = addDays(d.end, 1), nx = billsIn(look, addDays(look, 45))[0];
+    bh += `<p class="billnote">None due this period.${nx ? ` Next: ${esc(nx.name)} on ${dayName(nx.due)}.` : ''}</p>`;
+  }
+  if(unset.length) bh += `<button class="billnote act" id="billFix">${esc(unset.map(b => b.name).join(', '))}: add the amount and due day</button>`;
+  if(!state.bills.length) bh += `<button class="billnote act" id="billFix">Add monthly bills like Spotify</button>`;
+  $('bills').innerHTML = bh;
+  if($('billFix')) $('billFix').onclick = openSettings;
 
   // categories, plus hidden ones that still have spending this cutoff
   const shown = list.concat(allCats().filter(c => c.hidden && d.by[c.id]));
@@ -958,13 +1005,43 @@ function drawFonts(){
   $('fonts').querySelectorAll('.fopt').forEach(b => b.onclick = () => { state.font = b.dataset.f; save(); applyFont(); drawFonts(); render(); });
 }
 function openSettings(){
-  drawCatList(); drawFonts();
+  drawCatList(); drawFonts(); drawBills();
   $('defPay').value = state.pay || '';
   showSheet($('setSheet'));
 }
 $('gear').onclick = openSettings;
 $('defPay').oninput = () => { state.pay = round2(Number($('defPay').value.replace(/[^0-9.]/g, '')) || 0); save(); render(); };
 $('setDone').onclick = () => hideSheet();
+
+/* monthly bills */
+function drawBills(){
+  $('billEdit').innerHTML = state.bills.map((b, i) => `<div class="be" data-i="${i}">
+    <div class="be1"><input class="field" id="bn_${b.id}" data-k="name" value="${esc(b.name)}" maxlength="24" placeholder="Spotify" aria-label="Bill name" autocomplete="off">
+      <button class="x" data-del="${i}">Remove</button></div>
+    <div class="be2"><div class="money"><input class="field" id="ba_${b.id}" data-k="amount" inputmode="decimal" value="${b.amount || ''}" placeholder="Amount" aria-label="Amount" autocomplete="off"></div>
+      <input class="field" id="bd_${b.id}" data-k="day" inputmode="numeric" value="${b.day || ''}" placeholder="Day" aria-label="Due day of the month" autocomplete="off">
+      <button class="chip" data-k="want">${b.want ? 'Wants' : 'Needs'}</button></div></div>`).join('');
+  $('billEdit').querySelectorAll('.be').forEach(row => {
+    const b = state.bills[+row.dataset.i];
+    row.querySelectorAll('input').forEach(inp => inp.oninput = () => {
+      const k = inp.dataset.k, v = inp.value;
+      if(k === 'name') b.name = v.trim();
+      if(k === 'amount') b.amount = round2(Number(v.replace(/[^0-9.]/g, '')) || 0);
+      if(k === 'day'){ const n = parseInt(v, 10); b.day = n >= 1 && n <= 31 ? n : null; }
+      save(); render();
+    });
+    row.querySelector('[data-k=want]').onclick = e => { b.want = !b.want; e.currentTarget.textContent = b.want ? 'Wants' : 'Needs'; save(); render(); };
+    row.querySelector('[data-del]').onclick = () => {
+      const i = +row.dataset.i, [gone] = state.bills.splice(i, 1); save(); drawBills(); render();
+      toast(`Removed ${gone.name || 'bill'}`, 'Undo', () => { state.bills.splice(i, 0, gone); save(); drawBills(); render(); });
+    };
+  });
+}
+$('addBillBtn').onclick = () => {
+  state.bills.push({id:'b' + Date.now().toString(36), name:'', amount:0, day:null, want:false});
+  save(); drawBills();
+  const rows = $('billEdit').querySelectorAll('.be'); rows[rows.length - 1].querySelector('input').focus();
+};
 
 /* new category */
 let newCat = {want:false, art:'gift', color:0};

@@ -247,6 +247,16 @@ const ART = {
     <rect x="13" y="28" width="34" height="4" rx="2" fill="#E0503F"/>
     <ellipse cx="18" cy="38" rx="1.3" ry="4" fill="#fff" opacity=".5"/>
   `),
+  bill: svg(`
+    <path d="M15 8h32v45l-4-3-4 3-4-3-4 3-4-3-4 3-4-3-4 3z" fill="#fff"/>
+    <path d="M38 8h9v45l-4-3-4 3-1-.8z" fill="#EEF0F6"/>
+    <rect x="20" y="15" width="17" height="3.2" rx="1.6" fill="#B9C0DE"/>
+    <rect x="20" y="22" width="11" height="3.2" rx="1.6" fill="#B9C0DE"/>
+    <rect x="20" y="29" width="14" height="3.2" rx="1.6" fill="#B9C0DE"/>
+    <circle cx="45" cy="44" r="11" fill="#4FB38A"/>
+    <circle cx="43.5" cy="42.5" r="9.5" fill="#7FD6B0"/>
+    <path d="M43 38v8.6a2.4 2.4 0 1 1-1.7-2.3V39.6l6.4-1.8v6.6a2.4 2.4 0 1 1-1.7-2.3v-3.4z" fill="#fff"/>
+  `),
 };
 
 // Small doodles for headings and decoration
