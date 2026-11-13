@@ -417,6 +417,9 @@ input[type=date].field{width:150px;padding:0 10px}
   <div class="form">
     <label for="payIn" id="payFor">Take-home pay</label>
     <div class="money"><input class="field" id="payIn" inputmode="decimal" placeholder="12000" autocomplete="off"></div>
+    <label for="paidOn">Paid on</label>
+    <input class="field" id="paidOn" type="date">
+    <p class="note" id="paidWhy"></p>
     <label class="check"><input type="checkbox" id="payDefault" checked> Use this for every cutoff</label>
     <p class="note">Family support and savings (₱3,000) come out of this first.</p>
   </div>
@@ -541,11 +544,11 @@ const FONTS = [
 ];
 const FIXED_TOTAL = FIXED.reduce((s, f) => s + f.amount, 0);
 const KEY = 'cutoff-journal-v1';
-const DEFAULTS = {pay:0, payOverrides:{}, font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
+const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function normalize(d){
-  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
+  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
   delete s.budgets; delete s.memories; return s;
 }
 function load(){ try{ const raw = localStorage.getItem(KEY); if(raw) return normalize(JSON.parse(raw)); }catch(e){} return structuredClone(DEFAULTS); }
@@ -571,16 +574,55 @@ const pad = n => String(n).padStart(2,'0');
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
 const lastDay = (y,m) => new Date(y, m+1, 0).getDate();
-const cutKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${d.getDate() <= 15 ? 1 : 2}`;
-function cutRange(key){
-  const [y,m,h] = key.split('-').map(Number);
-  return {start:new Date(y, m-1, h === 1 ? 1 : 16), end:new Date(y, m-1, h === 1 ? 15 : lastDay(y, m-1))};
+// Pay periods: each pay (the 15th, and the 30th or month end) funds spending from its payday
+// until the day before the next payday. A payday on a weekend or holiday moves back to the working day before it.
+const DAY = 864e5;
+const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+function easter(y){
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+    g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4,
+    l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), n = h + l - 7 * m + 114;
+  return new Date(y, Math.floor(n / 31) - 1, (n % 31) + 1);
 }
+const HOLI = {};
+function holidays(y){
+  if(HOLI[y]) return HOLI[y];
+  const m = new Map(), add = (mo, d, name) => m.set(iso(new Date(y, mo - 1, d)), name);
+  add(1, 1, "New Year's Day"); add(4, 9, 'Araw ng Kagitingan'); add(5, 1, 'Labor Day'); add(6, 12, 'Independence Day');
+  add(8, 21, 'Ninoy Aquino Day'); add(11, 1, "All Saints' Day"); add(11, 2, "All Souls' Day"); add(11, 30, 'Bonifacio Day');
+  add(12, 8, 'Immaculate Conception'); add(12, 24, 'Christmas Eve'); add(12, 25, 'Christmas Day'); add(12, 30, 'Rizal Day'); add(12, 31, "New Year's Eve");
+  const aug = new Date(y, 7, 31); m.set(iso(addDays(aug, -((aug.getDay() + 6) % 7))), 'National Heroes Day');
+  const e = easter(y); m.set(iso(addDays(e, -3)), 'Maundy Thursday'); m.set(iso(addDays(e, -2)), 'Good Friday'); m.set(iso(addDays(e, -1)), 'Black Saturday');
+  return HOLI[y] = m;
+}
+const offDay = d => d.getDay() === 0 || d.getDay() === 6 || holidays(d.getFullYear()).has(iso(d));
+// key "YYYY-MM-1" is that month's 15th pay, "YYYY-MM-2" its 30th (or month-end) pay
+function nominalPayday(key){ const [y,m,h] = key.split('-').map(Number); return new Date(y, m-1, h === 1 ? 15 : Math.min(30, lastDay(y, m-1))); }
+function autoPayday(key){ let d = nominalPayday(key); while(offDay(d)) d = addDays(d, -1); return d; }
+const payday = key => state.paydayOverrides[key] ? parse(state.paydayOverrides[key]) : autoPayday(key);
 function shiftCut(key, delta){
   let [y,m,h] = key.split('-').map(Number);
   const idx = (y*12 + (m-1))*2 + (h-1) + delta;
   y = Math.floor(idx/24); const rem = idx - y*24;
   return `${y}-${pad(Math.floor(rem/2)+1)}-${rem%2+1}`;
+}
+function cutRange(key){ return {start:payday(key), end:addDays(payday(shiftCut(key, 1)), -1)}; }
+function cutKey(d){
+  const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
+  let k = day < 15 ? shiftCut(`${y}-${pad(m)}-1`, -1) : `${y}-${pad(m)}-${day >= Math.min(30, lastDay(y, m-1)) ? 2 : 1}`;
+  for(let i = 0; i < 4 && cutRange(shiftCut(k, 1)).start <= d; i++) k = shiftCut(k, 1);
+  for(let i = 0; i < 4 && cutRange(k).start > d; i++) k = shiftCut(k, -1);
+  return k;
+}
+const WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dayName = d => `${WD[d.getDay()]}, ${MON[d.getMonth()]} ${d.getDate()}`;
+const payName = key => { const n = nominalPayday(key); return `${MON[n.getMonth()]} ${n.getDate()} pay`; };
+function rangeLabel(s, e){ return s.getMonth() === e.getMonth() ? `${MON[s.getMonth()]} ${s.getDate()}–${e.getDate()}` : `${MON[s.getMonth()]} ${s.getDate()} – ${MON[e.getMonth()]} ${e.getDate()}`; }
+function whyMoved(key){
+  if(state.paydayOverrides[key]) return 'you set this date';
+  const n = nominalPayday(key); if(+n === +payday(key)) return '';
+  const h = holidays(n.getFullYear()).get(iso(n));
+  return `${MON[n.getMonth()]} ${n.getDate()} is ${h || (n.getDay() === 0 ? 'a Sunday' : 'a Saturday')}`;
 }
 const today = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
 let viewKey = cutKey(today());
@@ -632,16 +674,13 @@ function countTo(el, from, to){
 
 function renderHeader(){
   const d = cutRange(viewKey), t = today(), curKey = cutKey(t), isCur = viewKey === curKey;
-  $('cutLabel').textContent = `${MON[d.start.getMonth()]} ${d.start.getDate()}–${d.end.getDate()} cutoff`;
-  if(isCur){ const left = d.end.getDate() - t.getDate() + 1; $('cutSub').textContent = left === 1 ? 'Payday is next' : `${left} days to go, today included`; }
-  else $('cutSub').textContent = viewKey < curKey ? `${d.start.getFullYear()} · past cutoff` : 'Upcoming cutoff';
+  $('cutLabel').textContent = rangeLabel(d.start, d.end);
+  const np = payday(shiftCut(viewKey, 1));
+  $('cutSub').textContent = `From your ${payName(viewKey)} · ` + (isCur ? `next pay ${dayName(np)}` : viewKey < curKey ? `${d.start.getFullYear()}, past` : 'upcoming');
   $('next').disabled = shiftCut(viewKey, 1) > shiftCut(curKey, 1);
   let dots = '';
-  for(let day = d.start.getDate(); day <= d.end.getDate(); day++){
-    const dd = new Date(d.start.getFullYear(), d.start.getMonth(), day);
-    dots += `<span class="dot ${dd < t ? 'past' : (+dd === +t ? 'today' : '')} ${day === d.end.getDate() ? 'payday' : ''}"></span>`;
-  }
-  $('dots').innerHTML = dots;
+  for(let dd = d.start; dd <= d.end; dd = addDays(dd, 1)) dots += `<span class="dot ${dd < t ? 'past' : (+dd === +t ? 'today' : '')}"></span>`;
+  $('dots').innerHTML = dots + `<span class="dot payday ${np <= t ? 'past' : ''}" title="Next pay"></span>`;
 }
 
 function render(){
@@ -656,14 +695,14 @@ function render(){
       <div class="sticker">${ART.wallet}</div>
       <p class="big"><span class="hl" id="remain">${peso(FIXED_TOTAL + d.spent)}</span><span class="hand">used so far</span></p>
       <button class="setpay ${enter}" id="setPayBtn">${ART.savings}
-        <div><strong>Add your pay for this cutoff</strong><span>Then this shows what's left from it.</span></div></button>`;
+        <div><strong>Add your ${payName(viewKey)}</strong><span>Then this shows what's left from it.</span></div></button>`;
     $('setPayBtn').onclick = openPay;
     shownRemaining = null;
   } else {
     const wants = round2(d.entries.filter(x => catOf(x.cat).want).reduce((s, x) => s + x.amount, 0));
     const needs = round2(d.spent - wants);
     const usedPct = (FIXED_TOTAL + d.spent) / d.pay * 100;
-    const daysLeft = isCur ? d.end.getDate() - t.getDate() + 1 : 0;
+    const daysLeft = isCur ? Math.round((d.end - t) / DAY) + 1 : 0;
     const perDay = isCur && d.remaining > 0 ? d.remaining / daysLeft : null;
     hero.innerHTML = `
       <div class="sticker">${ART.wallet}</div>
@@ -874,9 +913,12 @@ function removeEntry(id, row){
 
 /* ---------- pay ---------- */
 function openPay(){
-  const d = cutData(viewKey);
-  $('payFor').textContent = `Take-home pay for ${MON[d.start.getMonth()]} ${d.start.getDate()}–${d.end.getDate()}`;
+  const d = cutData(viewKey), why = whyMoved(viewKey);
+  $('payTitle').textContent = `Your ${payName(viewKey)}`;
+  $('payFor').textContent = `Take-home pay for ${rangeLabel(d.start, d.end)}`;
   $('payIn').value = d.pay || '';
+  $('paidOn').value = iso(payday(viewKey));
+  $('paidWhy').textContent = why && !state.paydayOverrides[viewKey] ? `Moved earlier because ${why}.` : 'Change it if your pay came on another day.';
   $('payDefault').checked = !(viewKey in state.payOverrides) || !state.pay;
   showSheet($('paySheet'));
   setTimeout(() => $('payIn').focus({preventScroll:true}), 350);
@@ -884,9 +926,15 @@ function openPay(){
 $('paySave').onclick = () => {
   const n = round2(Number(String($('payIn').value).replace(/[^0-9.]/g, '')) || 0);
   if(n <= 0){ $('payIn').focus(); return; }
+  const on = $('paidOn').value;
+  if(on){
+    const dt = parse(on), prev = payday(shiftCut(viewKey, -1)), next = payday(shiftCut(viewKey, 1));
+    if(dt <= prev || dt >= next){ $('paidWhy').textContent = `Pick a day between ${dayName(addDays(prev, 1))} and ${dayName(addDays(next, -1))}.`; shake($('paidOn')); return; }
+    if(on === iso(autoPayday(viewKey))) delete state.paydayOverrides[viewKey]; else state.paydayOverrides[viewKey] = on;
+  }
   if($('payDefault').checked){ state.pay = n; delete state.payOverrides[viewKey]; }
   else state.payOverrides[viewKey] = n;
-  save(); hideSheet(); render();
+  save(); hideSheet(); shownRemaining = null; render();
 };
 
 /* ---------- settings ---------- */
