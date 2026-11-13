@@ -1,72 +1,40 @@
 // Calm picnic at the eco park: sky, lagoon with a swan boat, pines, picnic blanket with sushi.
-// Doodle couple walking hand in hand, drawn loose like a phone sketch:
-// black line, a soft grey line offset to the lower left, flat white fill, wobble filter.
-// Feet at y=0, she is on the left, he is on the right.
-const INK = '#151515', GREY = '#A3A3A3';
-const OFF = 'translate(-1.1 .6)';
-const shape = (d, sw = 1.6) => `<path d="${d}" fill="none" stroke="${GREY}" stroke-width="${sw - .2}" stroke-linejoin="round" transform="${OFF}"/><path d="${d}" fill="#fff"/><path d="${d}" fill="none" stroke="${INK}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round"/>`;
-const ring = (r, sw = 1.6) => `<circle r="${r}" fill="none" stroke="${GREY}" stroke-width="${sw - .2}" transform="${OFF}"/><circle r="${r}" fill="#fff" stroke="${INK}" stroke-width="${sw}"/>`;
-const tube = d => `<path d="${d}" fill="none" stroke="${GREY}" stroke-width="4.4" stroke-linecap="round" transform="${OFF}"/><path d="${d}" fill="none" stroke="${INK}" stroke-width="4.6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`;
-const mitt = (x, y, r) => `<g transform="translate(${x} ${y})">${ring(r, 1.4)}</g>`;
-const FOOT = shape('M-4.2 0 C-4.4 -3.4 -2 -4.8 .6 -4.8 C3.8 -4.8 5.8 -2.6 5.2 0 Z', 1.4);
-const eye = (x, y, rx, ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${INK}"/><circle cx="${x - rx * .22}" cy="${y - ry * .3}" r="${rx * .5}" fill="#fff"/>`;
-const blush = (x, y) => `<path d="M${x} ${y} l3 -2.1 M${x + 2} ${y + 1.2} l3 -2.1 M${x + 4} ${y + 2.4} l3 -2.1" stroke="#FF5FA0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>`;
-// thin sketchy glasses: two light rings, a bridge and short arms to the side of the head
-const specs = (lx, rx, y, r, left, right) => `<g fill="none" stroke="#6E6E6E" stroke-width=".55" stroke-linecap="round">
-  <circle cx="${lx}" cy="${y}" r="${r}"/><circle cx="${rx}" cy="${y}" r="${r}"/>
-  <path d="M${lx + r} ${y - .4} Q${(lx + rx) / 2} ${y - 1.8} ${rx - r} ${y - .4} M${lx - r} ${y} L${left} ${y - 1.2} M${rx + r} ${y} L${right} ${y - 1}"/></g>`;
+// Two doodle cats chilling side by side at the picnic: a dark cat and a white cat leaning on it.
+// Thick marker outline, flat fills, a light wobble filter. Feet sit at y=0.
+const INK = '#141414', LINE = 'stroke="#141414" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"';
+const heartPath = 'M0 3 C-4 0 -5 -2 -5 -3.4 a2.4 2.4 0 0 1 5 -.8 a2.4 2.4 0 0 1 5 .8 C5 -2 4 0 0 3z';
 
-const HER_HEAD = `
-  <g transform="translate(0 -34)"><g class="htilt">
-    ${ring(13)}
-    <g class="blink">${eye(-3.6, 0.8, 3.3, 3.9)}${eye(6.1, 0.6, 3.3, 3.9)}</g>
-    ${specs(-3.6, 6.1, 0.7, 4.8, -12.6, 12.6)}
-    ${blush(-10, 6.6)}${blush(2.6, 6.8)}
-    <g transform="translate(7.5 -10.5) rotate(18)"><g class="bow">
-      <path d="M0 0 C-5.5 -4.8 -7 2.4 -1.6 2 Z" fill="#FF8FB1" stroke="#E0527F" stroke-width=".9" stroke-linejoin="round"/>
-      <path d="M0 0 C5.5 -4.8 7 2.4 1.6 2 Z" fill="#FF8FB1" stroke="#E0527F" stroke-width=".9" stroke-linejoin="round"/>
-      <path d="M-.4 .8 L-2 4.6 M.4 .8 L2 4.4" stroke="#E0527F" stroke-width="1.1" stroke-linecap="round"/>
-      <circle r="1.7" fill="#FF6FA0" stroke="#E0527F" stroke-width=".8"/>
+const DARK_CAT = `
+  <g class="darkcat">
+    <path d="M-30 0 C-33 -6 -34 -16 -32 -24 C-38 -28 -40 -38 -36 -46 L-34 -57 L-25 -50.5 Q-17 -52.5 -10 -50.5 L-2.5 -57.5 L-1 -45 C2 -38 0 -30 -6 -27 C-2 -18 -2 -8 -4 0 Q-9 3 -13 0 Q-17 3 -21 0 Q-25 3 -30 0 Z" fill="#4A4549" ${LINE}/>
+    <g class="whisk l"><path d="M-44 -39 L-54 -40 M-44.5 -34.5 L-52.5 -32.5" fill="none" ${LINE}/></g>
+    <path d="M-28.5 -41 L-24.5 -41.6 M-17.5 -41.6 L-13.5 -41" fill="none" ${LINE}/>
+    <path d="M-23.6 -35.4 q1.6 3 3.2 0 q1.6 3 3.2 0" fill="none" stroke="${INK}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="-32" cy="-36.6" rx="3.2" ry="1.9" fill="#F4A3B4"/>
+  </g>`;
+
+const WHITE_CAT = `
+  <g class="whitecat">
+    <g transform="translate(29 -6)"><g class="tail">
+      <path d="M0 0 Q11 2 12 -8 Q12.4 -13.6 8 -12.8" fill="none" stroke="${INK}" stroke-width="6.2" stroke-linecap="round"/>
+      <path d="M0 0 Q11 2 12 -8 Q12.4 -13.6 8 -12.8" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
     </g></g>
-  </g></g>`;
-
-const HIS_HEAD = `
-  <g transform="translate(0 -41)"><g class="htilt b">
-    ${ring(15)}
-    <g class="blink b">${eye(-4, 0.8, 3.7, 4.3)}${eye(7.4, 0.6, 3.7, 4.3)}</g>
-    ${specs(-4, 7.4, 0.7, 5.3, -14.6, 14.6)}
-    ${blush(-11.6, 7.6)}${blush(3.6, 7.8)}
-  </g></g>`;
+    <path d="M-3 0 C-6 -10 -8 -20 -6 -27 C-12 -31 -12.5 -40 -6.5 -45 L-4.5 -56 L4 -48.5 Q11 -50.5 17 -47.5 L25.5 -54 L26.5 -42 C31.5 -36 30 -28 24 -26 C30 -20 33 -10 30 -4 Q29 2 22 0 Q18 3 14 0 Q10 3 6 0 Q2 3 -3 0 Z" fill="#fff" ${LINE}/>
+    <g class="whisk r"><path d="M34 -37 L44 -38 M34.5 -32.5 L42.5 -30.5" fill="none" ${LINE}/></g>
+    <g class="squint"><path d="M-0.5 -40.6 L3.8 -38.4 L-0.5 -36.2 M19 -40.6 L14.7 -38.4 L19 -36.2" fill="none" ${LINE}/></g>
+    <g class="open"><circle cx="1.6" cy="-38.4" r="1.7" fill="${INK}"/><circle cx="16.8" cy="-38.4" r="1.7" fill="${INK}"/></g>
+    <path d="M5.8 -32.4 q1.7 3.2 3.4 0 q1.7 3.2 3.4 0" fill="none" stroke="${INK}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="22.6" cy="-33.4" rx="3.4" ry="2" fill="#F4A3B4"/>
+  </g>`;
 
 const COUPLE = `
-  <g transform="translate(0 194) scale(1.15)">
-    <g class="runner">
-      <g class="hearts" transform="translate(15 -62)">
-        <path class="h1" d="M0 3 C-4 0 -5 -2 -5 -3.4 a2.4 2.4 0 0 1 5 -.8 a2.4 2.4 0 0 1 5 .8 C5 -2 4 0 0 3z" fill="#FF6B8A"/>
-        <g transform="translate(8 3) scale(.7)"><path class="h2" d="M0 3 C-4 0 -5 -2 -5 -3.4 a2.4 2.4 0 0 1 5 -.8 a2.4 2.4 0 0 1 5 .8 C5 -2 4 0 0 3z" fill="#FFA6B8"/></g>
-      </g>
-      <ellipse class="shadow" cx="0.5" cy="0.4" rx="11" ry="2.2" fill="#3E8F57" opacity=".3"/>
-      <ellipse class="shadow" cx="30.5" cy="0.4" rx="12.5" ry="2.4" fill="#3E8F57" opacity=".3"/>
-      <g filter="url(#sketchy)">
-        <g transform="translate(-4.2 0)"><g class="stepA">${FOOT}</g></g>
-        <g transform="translate(4 0)"><g class="stepB">${FOOT}</g></g>
-        <g transform="translate(25.2 0) scale(1.15)"><g class="stepA">${FOOT}</g></g>
-        <g transform="translate(35 0) scale(1.15)"><g class="stepB">${FOOT}</g></g>
-        <g class="bob">
-          <g transform="translate(-7 -18)"><g class="swingA">${tube('M0 0 C-1.8 3 -3.2 6 -3.9 9')}${mitt(-4.1, 10.4, 2.7)}</g></g>
-          ${tube('M7 -18 C9.8 -15 12.2 -12 14 -9.4')}${mitt(14.3, -8.6, 2.8)}
-          <g transform="translate(30 0)">
-            ${tube('M-8.4 -22 C-11 -17.5 -14.4 -12.5 -16.2 -9.2')}
-            <g transform="translate(8.4 -22)"><g class="swingB">${tube('M0 0 C1.9 3.6 3.4 7 4 10')}${mitt(4.3, 11.6, 3)}</g></g>
-          </g>
-          ${shape('M-7.5 -22 C-8.6 -14 -9.2 -8 -8.2 -3 L-1.4 -3 Q0 -6 1.4 -3 L8.2 -3 C9.2 -8 8.5 -14 7.5 -22 Z')}
-          <g transform="translate(30 0)">${shape('M-9 -27 C-10.2 -17 -10.8 -9 -9.6 -3 L-1.6 -3 Q0 -6.5 1.6 -3 L9.6 -3 C10.8 -9 10.2 -17 9 -27 Z')}</g>
-          ${mitt(15.9, -8.1, 3)}
-          ${HER_HEAD}
-          <g transform="translate(30 0)">${HIS_HEAD}</g>
-        </g>
-      </g>
+  <g transform="translate(90 193) scale(1.05)">
+    <ellipse cx="0" cy="0.8" rx="40" ry="3.2" fill="#3E8F57" opacity=".28"/>
+    <g class="hearts" transform="translate(-6 -68)">
+      <path class="h1" d="${heartPath}" fill="#F4A3B4"/>
+      <g transform="translate(9 4) scale(.65)"><path class="h2" d="${heartPath}" fill="#F7BFCB"/></g>
     </g>
+    <g filter="url(#sketchy)">${DARK_CAT}${WHITE_CAT}</g>
   </g>`;
 
 const FLOWERS = `

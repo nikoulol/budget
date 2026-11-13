@@ -56,36 +56,30 @@ svg{display:block}
 .fly ellipse{transform-box:fill-box;transform-origin:left center;animation:flap .3s ease-in-out infinite alternate}
 @keyframes flap{to{transform:scaleY(.4)}}
 
-/* doodle couple: slow walk hand in hand. Each group sits at its pivot, so rotate/translate act around 0 0. */
-.couple .runner{animation:run 34s linear infinite}
-@keyframes run{from{transform:translateX(-50px)}to{transform:translateX(370px)}}
-.couple .bob{animation:bob2 .6s ease-in-out infinite}
-@keyframes bob2{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.6px)}}
-.couple .stepA{animation:step 1.2s ease-in-out infinite}
-.couple .stepB{animation:step 1.2s ease-in-out infinite;animation-delay:-.6s}
-@keyframes step{0%,50%,100%{transform:translate(0,0) rotate(0)}22%{transform:translate(1.4px,-2.6px) rotate(-10deg)}}
-.couple .swingA{animation:swing 1.2s ease-in-out infinite alternate}
-.couple .swingB{animation:swing 1.2s ease-in-out infinite alternate-reverse}
-@keyframes swing{from{transform:rotate(14deg)}to{transform:rotate(-10deg)}}
-.couple .htilt{animation:tilt 1.2s ease-in-out infinite}
-.couple .htilt.b{animation-delay:-.3s}
-@keyframes tilt{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
-.couple .bow{animation:bow 1.2s ease-in-out infinite}
-@keyframes bow{50%{transform:rotate(-10deg) scale(1.08)}}
-.couple .blink{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
-.couple .blink.b{animation-delay:-1.7s}
-@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.12)}}
-.couple .shadow{transform-box:fill-box;transform-origin:center;animation:shad .6s ease-in-out infinite}
-@keyframes shad{50%{transform:scaleX(.9);opacity:.22}}
-.couple .h1,.couple .h2{opacity:0;animation:heart 3.2s ease-out infinite}
-.couple .h2{animation-delay:-1.6s}
+/* doodle cats chilling: breathing, a nuzzle, tail swish, whisker twitch, a blink, floating hearts */
+.couple .darkcat,.couple .whitecat{transform-box:fill-box;transform-origin:50% 100%}
+.couple .darkcat{animation:breathe 3.6s ease-in-out infinite}
+.couple .whitecat{transform-origin:0% 100%;animation:nuzzle 5.2s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.015,1.035)}}
+@keyframes nuzzle{0%,100%{transform:rotate(0) scale(1,1)}30%{transform:rotate(-3.5deg) scale(1.01,1.03)}55%{transform:rotate(-2deg) scale(1,1.01)}70%{transform:rotate(-3.5deg) scale(1.01,1.03)}}
+.couple .tail{animation:tail 2.4s ease-in-out infinite}
+@keyframes tail{0%,100%{transform:rotate(0)}40%{transform:rotate(-14deg)}70%{transform:rotate(6deg)}}
+.couple .whisk{transform-box:fill-box;animation:whisk 3.1s ease-in-out infinite}
+.couple .whisk.l{transform-origin:100% 50%}
+.couple .whisk.r{transform-origin:0% 50%;animation-delay:-1.3s}
+@keyframes whisk{0%,86%,100%{transform:rotate(0)}90%{transform:rotate(-7deg)}94%{transform:rotate(5deg)}}
+.couple .open{opacity:0;animation:peek 7s steps(1) infinite}
+.couple .squint{animation:squint 7s steps(1) infinite}
+@keyframes peek{0%,78%{opacity:0}80%,90%{opacity:1}92%{opacity:0}}
+@keyframes squint{0%,78%{opacity:1}80%,90%{opacity:0}92%{opacity:1}}
+.couple .h1,.couple .h2{opacity:0;animation:heart 3.4s ease-out infinite}
+.couple .h2{animation-delay:-1.7s}
 @keyframes heart{0%{transform:translateY(4px) scale(.4);opacity:0}20%{opacity:1}100%{transform:translateY(-18px) scale(1.1);opacity:0}}
 .flowers .sway{animation:sway 3.2s ease-in-out infinite alternate}
 .flowers .s2{animation-duration:3.8s;animation-delay:-1s}
 .flowers .s3{animation-duration:4.4s;animation-delay:-2s}
 @keyframes sway{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
 @media (prefers-reduced-motion:reduce){
-  .couple .runner{animation:none!important;transform:translateX(236px)}
   .couple .h1,.couple .h2{display:none}
 }
 
