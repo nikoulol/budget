@@ -91,6 +91,7 @@ svg{display:block}
 .cut{flex:1;text-align:center;line-height:1.1}
 .cut-label{font-family:var(--hand);font-size:calc(27px * var(--hs));font-weight:700}
 .cut-sub{font-size:13px;color:#3D4A85}
+.cut-next{font-size:11.5px;color:#5F6A9C;margin-top:1px;letter-spacing:.01em}
 .dots{display:flex;justify-content:center;gap:5px;margin:8px 0 2px;flex-wrap:wrap}
 .dot{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.85)}
 .dot.past{background:#8E97C2}
@@ -349,6 +350,7 @@ input[type=date].field{width:150px;padding:0 10px}
       <div class="cut">
         <div class="cut-label" id="cutLabel">Cutoff</div>
         <div class="cut-sub" id="cutSub"></div>
+        <div class="cut-next" id="cutNext"></div>
       </div>
       <button class="icon-btn" id="next" aria-label="Next cutoff">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
@@ -670,7 +672,8 @@ function renderHeader(){
   const d = cutRange(viewKey), t = today(), curKey = cutKey(t), isCur = viewKey === curKey;
   $('cutLabel').textContent = rangeLabel(d.start, d.end);
   const np = payday(shiftCut(viewKey, 1));
-  $('cutSub').textContent = `From your ${payName(viewKey)} · ` + (isCur ? `next pay ${dayName(np)}` : viewKey < curKey ? `${d.start.getFullYear()}, past` : 'upcoming');
+  $('cutSub').textContent = `From your ${payName(viewKey)}`;
+  $('cutNext').textContent = isCur ? `Next pay ${dayName(np)}` : viewKey < curKey ? `Past period, ${d.start.getFullYear()}` : 'Upcoming period';
   $('next').disabled = shiftCut(viewKey, 1) > shiftCut(curKey, 1);
   let dots = '';
   for(let dd = d.start; dd <= d.end; dd = addDays(dd, 1)) dots += `<span class="dot ${dd < t ? 'past' : (+dd === +t ? 'today' : '')}"></span>`;
