@@ -148,6 +148,13 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .fx .lock{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--paper);display:grid;place-items:center}
 
 .accts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.xferbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;margin-top:10px;border-radius:16px;background:var(--paper-3);color:var(--ink);font-weight:var(--w);font-size:15px;transition:transform .16s var(--ease-out)}
+.xferbtn:active{transform:scale(.97)}
+.logtabs{display:flex;gap:4px;padding:4px;margin:0 4px 10px;border-radius:14px;background:var(--paper-3)}
+.logtabs button{flex:1;height:38px;border-radius:10px;font-size:15px;font-weight:var(--w);color:var(--ink-2);transition:background .2s,color .2s,box-shadow .2s}
+.logtabs button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,26,60,.12)}
+.entry .xart{display:grid;place-items:center;color:#fff;padding:0}
+.paywith .pw:disabled{opacity:.3}
 .acct{position:relative;overflow:hidden;text-align:left;border-radius:18px;padding:12px 14px 13px;background:var(--c);color:#fff;transition:transform .16s var(--ease-out)}
 .acct::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12)}
 .acct:active{transform:scale(.97)}
@@ -437,6 +444,7 @@ input[type=date].field{width:150px;padding:0 10px}
     <section class="hero" id="hero"></section>
     <h2 class="hand"><span class="dd" id="ddCoin"></span>Money on hand <small id="moneySub"></small></h2>
     <div class="accts" id="accts"></div>
+    <button class="xferbtn" id="xferBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg>Transfer money</button>
     <h2 class="hand"><span class="dd" id="ddStar"></span>Set aside first <small>locked every cutoff</small></h2>
     <div class="fixed" id="fixed"></div>
     <h2 class="hand"><span class="dd" id="ddBill"></span>Bills this period</h2>
@@ -444,6 +452,10 @@ input[type=date].field{width:150px;padding:0 10px}
     <h2 class="hand"><span class="dd" id="ddSpark"></span>Spending</h2>
     <div class="cats" id="cats"></div>
     <h2 class="hand"><span class="dd" id="ddHeart"></span>Logbook <span class="dd wide" id="ddSquig"></span></h2>
+    <div class="logtabs" id="logTabs" role="tablist" aria-label="Logbook">
+      <button role="tab" data-t="exp" aria-selected="true">Expenses</button>
+      <button role="tab" data-t="xfer" aria-selected="false">Transfers</button>
+    </div>
     <div class="bymode" id="bymode"></div>
     <div class="log" id="log"></div>
   </div>
@@ -492,6 +504,23 @@ input[type=date].field{width:150px;padding:0 10px}
     <p class="note" id="acctNote"></p>
   </div>
   <div class="stickysave"><button class="primary" id="acctSave">Save balance</button></div>
+</section>
+
+<section class="sheet" id="xferSheet" role="dialog" aria-modal="true" aria-labelledby="xferTitle">
+  <div class="grab"></div>
+  <h3 id="xferTitle">Transfer money</h3>
+  <div class="paywith" id="xferFrom" role="radiogroup" aria-label="From"></div>
+  <div class="paywith" id="xferTo" role="radiogroup" aria-label="To"></div>
+  <div class="form">
+    <label for="xferIn">Amount</label>
+    <div class="money"><input class="field" id="xferIn" inputmode="decimal" enterkeyhint="next" placeholder="0" autocomplete="off"></div>
+    <div class="two">
+      <div><label for="xferFee">Fee (optional)</label><div class="money"><input class="field" id="xferFee" inputmode="decimal" enterkeyhint="done" placeholder="0" autocomplete="off"></div></div>
+      <div><label for="xferDate">Date</label><input class="field" id="xferDate" type="date"></div>
+    </div>
+    <p class="note" id="xferNote"></p>
+  </div>
+  <div class="stickysave"><button class="primary" id="xferSave">Transfer</button></div>
 </section>
 
 <section class="sheet" id="paySheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
@@ -639,11 +668,11 @@ const FONTS = [
 ];
 const FIXED_TOTAL = FIXED.reduce((s, f) => s + f.amount, 0);
 const KEY = 'cutoff-journal-v1';
-const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], accounts:[{id:'cbc', name:'Chinabank', kind:'digital', base:null, setAt:0}, {id:'mari', name:'Maribank', kind:'digital', base:null, setAt:0}, {id:'gcash', name:'GCash', kind:'digital', base:null, setAt:0}, {id:'cash', name:'Cash', kind:'cash', base:null, setAt:0}], lastPay:'cash', font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
+const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], accounts:[{id:'cbc', name:'Chinabank', kind:'digital', base:null, setAt:0}, {id:'mari', name:'Maribank', kind:'digital', base:null, setAt:0}, {id:'gcash', name:'GCash', kind:'digital', base:null, setAt:0}, {id:'cash', name:'Cash', kind:'cash', base:null, setAt:0}], lastPay:'cash', font:'journal', customCats:[], entries:[], transfers:[], pinHash:null, pinAlgo:null};
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function normalize(d){
-  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), accounts:Array.isArray(d.accounts) ? d.accounts : structuredClone(DEFAULTS.accounts), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
+  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), accounts:Array.isArray(d.accounts) ? d.accounts : structuredClone(DEFAULTS.accounts), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : [], transfers:Array.isArray(d.transfers) ? d.transfers : []};
   delete s.budgets; delete s.memories; return s;
 }
 function load(){ try{ const raw = localStorage.getItem(KEY); if(raw) return normalize(JSON.parse(raw)); }catch(e){} return structuredClone(DEFAULTS); }
@@ -752,7 +781,7 @@ const $ = id => document.getElementById(id);
 $('scene').insertAdjacentHTML('afterbegin', sceneSVG());
 $('ddStar').innerHTML = DOODLE.star; $('ddCoin').innerHTML = DOODLE.star; $('ddBill').innerHTML = DOODLE.sparkle; $('ddSpark').innerHTML = DOODLE.sparkle;
 $('ddHeart').innerHTML = DOODLE.heart; $('ddHeart2').innerHTML = DOODLE.heart; $('ddSquig').innerHTML = DOODLE.squiggle;
-let shownRemaining = null, freshId = null, firstPaint = true;
+let shownRemaining = null, freshId = null, firstPaint = true, logTab = 'exp';
 
 function cutData(key){
   const {start, end} = cutRange(key);
@@ -760,10 +789,13 @@ function cutData(key){
   const entries = state.entries.filter(x => x.date >= s && x.date <= e);
   const by = {}, count = {};
   entries.forEach(x => { by[x.cat] = round2((by[x.cat] || 0) + x.amount); count[x.cat] = (count[x.cat] || 0) + 1; });
-  const spent = round2(entries.reduce((a, x) => a + x.amount, 0));
+  // transfers only move money; a transfer's fee is the one part that counts as spending
+  const xfers = state.transfers.filter(x => x.date >= s && x.date <= e);
+  const fees = round2(xfers.reduce((a, x) => a + (x.fee || 0), 0));
+  const spent = round2(entries.reduce((a, x) => a + x.amount, 0) + fees);
   const pay = state.payOverrides[key] ?? state.pay;
   const bills = billsIn(start, end), billTotal = round2(bills.reduce((a, b) => a + b.amount, 0));
-  return {start, end, entries, by, count, spent, pay, bills, billTotal, remaining: round2(pay - FIXED_TOTAL - billTotal - spent)};
+  return {start, end, entries, xfers, fees, by, count, spent, pay, bills, billTotal, remaining: round2(pay - FIXED_TOTAL - billTotal - spent)};
 }
 
 function countTo(el, from, to){
@@ -869,9 +901,15 @@ function render(){
   });
 
   renderAccounts(enter);
+  $('logTabs').querySelectorAll('button').forEach(b => {
+    b.setAttribute('aria-selected', b.dataset.t === logTab);
+    if(b.dataset.t === 'xfer') b.textContent = d.xfers.length ? `Transfers · ${d.xfers.length}` : 'Transfers';
+  });
+  if(logTab === 'xfer') renderXfers(d, t, enter); else {
   // this period's spending by how it was paid
   const modes = {};
   d.entries.forEach(x => { const k = x.pay && acctOf(x.pay) ? x.pay : '_none'; modes[k] = round2((modes[k] || 0) + x.amount); });
+  d.xfers.forEach(x => { if(x.fee > 0){ const k = acctOf(x.from) ? x.from : '_none'; modes[k] = round2((modes[k] || 0) + x.fee); } });
   const modeKeys = Object.keys(modes);
   $('bymode').innerHTML = modeKeys.some(k => k !== '_none')
     ? Object.entries(modes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span>${k === '_none' ? 'Not set' : esc(acctOf(k).name)} <b>${peso(v)}</b></span>`).join('')
@@ -899,6 +937,7 @@ function render(){
       row.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openEdit(row.dataset.edit); } };
     });
   }
+  }
   freshId = null; firstPaint = false;
 }
 
@@ -915,9 +954,15 @@ const colorOf = a => a.color || BRAND[a.id] || (a.kind === 'cash' ? '#237F59' : 
 function tintOf(hex){ const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, k = .84; return `rgb(${Math.round(r + (255 - r) * k)},${Math.round(g + (255 - g) * k)},${Math.round(b + (255 - b) * k)})`; }
 const iconOf = (a, size) => a.icon ? `<img class="aico" src="${a.icon}" alt="" width="${size}" height="${size}">` : (ICON[a.kind] || ICON.digital);
 // what an account holds now: the balance you last set, less what you paid from it since
-function balanceOf(a){
+// what an account holds now: the balance you last set, less what you paid from it since,
+// plus or minus the transfers since (skip leaves one transfer out, for previews while editing it)
+function balanceOf(a, skip){
   if(a.base === null || a.base === undefined) return null;
-  return round2(a.base - state.entries.filter(x => x.pay === a.id && x.ts > a.setAt).reduce((s, x) => s + x.amount, 0));
+  const spent = state.entries.filter(x => x.pay === a.id && x.ts > a.setAt).reduce((s, x) => s + x.amount, 0);
+  const xs = state.transfers.filter(x => x.id !== skip && x.ts > a.setAt);
+  const out = xs.filter(x => x.from === a.id).reduce((s, x) => s + x.amount + (x.fee || 0), 0);
+  const inn = xs.filter(x => x.to === a.id).reduce((s, x) => s + x.amount, 0);
+  return round2(a.base - spent - out + inn);
 }
 function renderAccounts(enter){
   const totals = {digital:0, cash:0}, any = {digital:false, cash:false};
@@ -942,7 +987,7 @@ function openAcct(id){
   $('acctTitle').textContent = a.name;
   $('acctFor').textContent = `How much is in ${a.name} right now?`;
   $('acctIn').value = b === null ? '' : b;
-  $('acctNote').textContent = `Expenses you log as paid with ${a.name} come off this automatically.`;
+  $('acctNote').textContent = `Expenses paid with ${a.name} and transfers in or out update this automatically.`;
   showSheet($('acctSheet'));
   setTimeout(() => $('acctIn').focus({preventScroll:true}), 350);
 }
@@ -954,6 +999,119 @@ $('acctSave').onclick = () => {
   if(raw === '' || isNaN(Number(raw))){ shake($('acctIn')); $('acctIn').focus(); return; }
   a.base = round2(Number(raw)); a.setAt = Date.now(); save(); hideSheet(); render();
   toast(`${a.name}: ${peso(a.base)}`);
+};
+
+/* ---------- transfers ---------- */
+const ARROWS = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg>';
+const GONE = {name:'Removed account', kind:'digital', color:'#8A8FA8'};
+const xAcct = id => acctOf(id) || GONE;
+function xferKind(x){
+  const f = xAcct(x.from), t = xAcct(x.to);
+  if(f.kind !== 'cash' && t.kind === 'cash') return 'Withdrawal';
+  if(f.kind === 'cash' && t.kind !== 'cash') return 'Cash in';
+  return 'Transfer';
+}
+function renderXfers(d, t, enter){
+  const moved = round2(d.xfers.reduce((s, x) => s + x.amount, 0));
+  $('bymode').innerHTML = d.xfers.length ? `<span>Moved <b>${peso(moved)}</b></span>${d.fees ? `<span>Fees <b>${peso(d.fees)}</b></span>` : ''}` : '';
+  if(!d.xfers.length){
+    $('log').innerHTML = `<div class="empty ${enter}" style="--i:8">${ART.wallet}<div><b>No transfers yet</b>Tap "Transfer money" under Money on hand when you move money, like Chinabank to GCash.</div></div>`;
+    return;
+  }
+  const items = [...d.xfers].sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+  let html = '', lastD = '';
+  items.forEach((x, i) => {
+    if(x.date !== lastD){ lastD = x.date; const dd = parse(x.date); html += `<div class="day">${iso(dd) === iso(t) ? 'Today' : `${MON[dd.getMonth()]} ${dd.getDate()}`}</div>`; }
+    const f = xAcct(x.from), to = xAcct(x.to), fc = colorOf(f), tc = colorOf(to);
+    const sub = xferKind(x) + (x.fee > 0 ? ` · Fee ${peso(x.fee)}` : '');
+    html += `<div class="entry ${x.id === freshId ? 'in' : enter}" data-xf="${x.id}" role="button" tabindex="0" aria-label="Edit transfer of ${peso(x.amount)} from ${esc(f.name)} to ${esc(to.name)}" style="--i:${Math.min(i, 8) + 8};--c:${tc}">
+      <div class="art xart" style="background:linear-gradient(135deg,${fc} 0 50%,${tc} 50% 100%)">${ARROWS}</div>
+      <div class="t"><div>${esc(f.name)} → ${esc(to.name)}</div><span>${sub}</span></div>
+      <div class="a">${peso(x.amount)}</div>
+      <button class="del" data-id="${x.id}" aria-label="Delete transfer of ${peso(x.amount)}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>`;
+  });
+  $('log').innerHTML = html;
+  $('log').querySelectorAll('.del').forEach(b => b.onclick = ev => { ev.stopPropagation(); removeXfer(b.dataset.id, b.closest('.entry')); });
+  $('log').querySelectorAll('.entry').forEach(row => {
+    row.onclick = () => openXfer(row.dataset.xf);
+    row.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openXfer(row.dataset.xf); } };
+  });
+}
+function removeXfer(id, row){
+  const go = () => {
+    const i = state.transfers.findIndex(x => x.id === id); if(i < 0) return;
+    const [x] = state.transfers.splice(i, 1); save(); shownRemaining = null; render();
+    toast(`Deleted ${peso(x.amount)} transfer`, 'Undo', () => { state.transfers.splice(i, 0, x); save(); render(); });
+  };
+  if(reduced || !row) return go();
+  row.animate([{transform:'none', opacity:1}, {transform:'translateX(-40%) rotate(-3deg)', opacity:0}], {duration:240, easing:'cubic-bezier(.4,0,1,1)'}).onfinish = go;
+}
+$('logTabs').querySelectorAll('button').forEach(b => b.onclick = () => { if(logTab === b.dataset.t) return; logTab = b.dataset.t; render(); });
+
+let xferFrom = null, xferTo = null, xferEditing = null;
+const numIn = el => { const v = Number(String(el.value).replace(/[^0-9.]/g, '')); return isNaN(v) ? 0 : round2(v); };
+function drawXfer(){
+  const chip = (a, on, off) => `<button class="pw" role="radio" data-id="${a.id}" aria-checked="${on}" ${off ? 'disabled' : ''} style="--pc:${colorOf(a)};--pb:${tintOf(colorOf(a))}">${iconOf(a, 20)}${esc(a.name)}</button>`;
+  $('xferFrom').innerHTML = '<div class="lbl">From</div>' + state.accounts.map(a => chip(a, a.id === xferFrom, false)).join('');
+  $('xferTo').innerHTML = '<div class="lbl">To</div>' + state.accounts.map(a => chip(a, a.id === xferTo, a.id === xferFrom)).join('');
+  $('xferFrom').querySelectorAll('.pw').forEach(b => b.onclick = () => {
+    if(b.dataset.id === xferTo) xferTo = xferFrom; // picking the "to" account as "from" swaps them
+    xferFrom = b.dataset.id; drawXfer();
+  });
+  $('xferTo').querySelectorAll('.pw').forEach(b => b.onclick = () => { xferTo = b.dataset.id; drawXfer(); });
+  xferPreview();
+}
+function xferPreview(){
+  const n = numIn($('xferIn')), f = numIn($('xferFee')), a = acctOf(xferFrom), b = acctOf(xferTo);
+  $('xferSave').textContent = xferEditing ? 'Save changes' : n > 0 && b ? `Move ${peso(n)} to ${b.name}` : 'Transfer';
+  if(!a || !b){ $('xferNote').textContent = ''; return; }
+  const ba = balanceOf(a, xferEditing), bb = balanceOf(b, xferEditing), lines = [];
+  if(n > 0){
+    lines.push(ba === null ? `${esc(a.name)} has no balance set yet.` : `${esc(a.name)}: ${peso(ba)} → <b>${peso(ba - n - f)}</b>`);
+    lines.push(bb === null ? `${esc(b.name)} has no balance set yet.` : `${esc(b.name)}: ${peso(bb)} → <b>${peso(bb + n)}</b>`);
+  }
+  if(f > 0) lines.push(`The ${peso(f)} fee counts as spending.`);
+  $('xferNote').innerHTML = lines.join('<br>') || 'Moving money between accounts is not spending. Only a fee counts.';
+}
+function openXfer(id){
+  if(state.accounts.length < 2){ toast('Add a second account in Settings first'); return; }
+  const x = id && state.transfers.find(t => t.id === id);
+  xferEditing = x ? x.id : null;
+  $('xferTitle').textContent = x ? 'Edit transfer' : 'Transfer money';
+  if(x){ xferFrom = x.from; xferTo = x.to; $('xferIn').value = x.amount; $('xferFee').value = x.fee || ''; $('xferDate').value = x.date; }
+  else {
+    xferFrom = state.lastXfer?.from; xferTo = state.lastXfer?.to;
+    $('xferIn').value = ''; $('xferFee').value = ''; $('xferDate').value = defaultDate();
+  }
+  if(!acctOf(xferFrom)) xferFrom = (state.accounts.find(a => a.kind !== 'cash') || state.accounts[0]).id;
+  if(!acctOf(xferTo) || xferTo === xferFrom) xferTo = (acctOf('gcash') && xferFrom !== 'gcash' ? acctOf('gcash') : state.accounts.find(a => a.id !== xferFrom)).id;
+  drawXfer(); showSheet($('xferSheet'));
+}
+$('xferBtn').onclick = () => openXfer();
+$('xferIn').oninput = xferPreview; $('xferFee').oninput = xferPreview;
+$('xferIn').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); $('xferFee').focus(); } };
+$('xferFee').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); $('xferSave').click(); } };
+$('xferSave').onclick = () => {
+  const n = numIn($('xferIn')), f = numIn($('xferFee'));
+  if(!(n > 0)){ shake($('xferIn')); $('xferIn').focus(); return; }
+  if(!acctOf(xferFrom) || !acctOf(xferTo) || xferFrom === xferTo){ shake($('xferTo')); return; }
+  const date = $('xferDate').value || iso(today()), to = acctOf(xferTo);
+  const old = xferEditing && state.transfers.find(t => t.id === xferEditing);
+  if(old){
+    const before = {...old};
+    Object.assign(old, {from:xferFrom, to:xferTo, amount:n, fee:f, date});
+    toast('Transfer updated', 'Undo', () => { Object.assign(old, before); save(); render(); });
+  } else {
+    const x = {id:'t' + Date.now().toString(36), from:xferFrom, to:xferTo, amount:n, fee:f, date, ts:Date.now()};
+    state.transfers.push(x); freshId = x.id;
+    toast(`Moved ${peso(n)} to ${to.name}`);
+  }
+  state.lastXfer = {from:xferFrom, to:xferTo};
+  const k = cutKey(parse(date)); if(k !== viewKey) viewKey = k;
+  logTab = 'xfer'; xferEditing = null;
+  save(); hideSheet(); shownRemaining = null; render();
 };
 
 /* ---------- confetti ---------- */
@@ -1103,6 +1261,7 @@ $('saveBtn').onclick = () => {
   const n = round2(Number(amountStr) || 0);
   if(n <= 0){ shake($('amountBox')); const h = $('addHint'); h.textContent = 'Enter an amount first'; h.classList.add('err'); return; }
   const date = $('dateIn').value || iso(today());
+  logTab = 'exp';
   if(editingId){
     const e = state.entries.find(x => x.id === editingId);
     if(e){
