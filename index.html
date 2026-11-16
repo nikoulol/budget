@@ -865,10 +865,12 @@ function sweepSavings(){
     const d = cutData(k); if(d.end >= t) break;
     if(state.swept[k]) continue;
     const extra = d.incs.reduce((s, x) => s + x.amount, 0);
-    const left = d.pay ? round2(d.remaining + extra) : 0;
+    // the locked savings plus whatever is left; overspending eats into the locked part first
+    const lock = FIXED.find(f => f.id === 'savings').amount;
+    const left = d.pay ? Math.max(0, round2(lock + d.remaining + extra)) : 0;
     if(left > 0){
       state.transfers.push({id:'t' + Date.now().toString(36) + i, from:state.payAcct, to:'save', amount:left, fee:0, date:iso(addDays(d.end, 1)), ts:Date.now(), auto:k});
-      notes.push(`Saved ${peso(left)} left from ${rangeLabel(d.start, d.end)}`);
+      notes.push(`Saved ${peso(left)} from ${rangeLabel(d.start, d.end)}`);
     }
     state.swept[k] = true;
   }
@@ -1092,7 +1094,7 @@ function renderXfers(d, t, enter){
   items.forEach((x, i) => {
     if(x.date !== lastD){ lastD = x.date; const dd = parse(x.date); html += `<div class="day">${iso(dd) === iso(t) ? 'Today' : `${MON[dd.getMonth()]} ${dd.getDate()}`}</div>`; }
     const f = xAcct(x.from), to = xAcct(x.to), fc = colorOf(f), tc = colorOf(to);
-    const sub = (x.auto ? `Left over from ${rangeLabel(cutRange(x.auto).start, cutRange(x.auto).end)}` : xferKind(x)) + (x.fee > 0 ? ` · Fee ${peso(x.fee)}` : '');
+    const sub = (x.auto ? `Savings + leftover, ${rangeLabel(cutRange(x.auto).start, cutRange(x.auto).end)}` : xferKind(x)) + (x.fee > 0 ? ` · Fee ${peso(x.fee)}` : '');
     html += `<div class="entry ${x.id === freshId ? 'in' : enter}" data-xf="${x.id}" role="button" tabindex="0" aria-label="Edit transfer of ${peso(x.amount)} from ${esc(f.name)} to ${esc(to.name)}" style="--i:${Math.min(i, 8) + 8};--c:${tc}">
       <div class="art xart" style="background:linear-gradient(135deg,${fc} 0 50%,${tc} 50% 100%)">${ARROWS}</div>
       <div class="t"><div>${esc(f.name)} → ${esc(to.name)}</div><span>${sub}</span></div>
