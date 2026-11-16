@@ -148,12 +148,17 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .fx .lock{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--paper);display:grid;place-items:center}
 
 .accts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.xferbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;margin-top:10px;border-radius:16px;background:var(--paper-3);color:var(--ink);font-weight:var(--w);font-size:15px;transition:transform .16s var(--ease-out)}
+.accts .acct:last-child:nth-child(odd){grid-column:1/-1}
+.paywith .pw:last-child:nth-child(even){grid-column:1/-1}
+.moneyacts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.xferbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:48px;border-radius:16px;background:var(--paper-3);color:var(--ink);font-weight:var(--w);font-size:15px;transition:transform .16s var(--ease-out)}
 .xferbtn:active{transform:scale(.97)}
 .logtabs{display:flex;gap:4px;padding:4px;margin:0 4px 10px;border-radius:14px;background:var(--paper-3)}
-.logtabs button{flex:1;height:38px;border-radius:10px;font-size:15px;font-weight:var(--w);color:var(--ink-2);transition:background .2s,color .2s,box-shadow .2s}
+.logtabs button{flex:1;min-width:0;white-space:nowrap;height:38px;border-radius:10px;font-size:14px;font-weight:var(--w);color:var(--ink-2);transition:background .2s,color .2s,box-shadow .2s}
 .logtabs button[aria-selected="true"]{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(20,26,60,.12)}
 .entry .xart{display:grid;place-items:center;color:#fff;padding:0}
+.entry .a.plus{color:#237F59}
+.entry.soon{opacity:.6}
 .paywith .pw:disabled{opacity:.3}
 .acct{position:relative;overflow:hidden;text-align:left;border-radius:18px;padding:12px 14px 13px;background:var(--c);color:#fff;transition:transform .16s var(--ease-out)}
 .acct::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12)}
@@ -448,7 +453,10 @@ input[type=date].field::-webkit-date-and-time-value{text-align:left}
     <section class="hero" id="hero"></section>
     <h2 class="hand"><span class="dd" id="ddCoin"></span>Money on hand <small id="moneySub"></small></h2>
     <div class="accts" id="accts"></div>
-    <button class="xferbtn" id="xferBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg>Transfer money</button>
+    <div class="moneyacts">
+      <button class="xferbtn" id="xferBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h15l-4-4M20 16H5l4 4"/></svg>Transfer</button>
+      <button class="xferbtn" id="incBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add income</button>
+    </div>
     <h2 class="hand"><span class="dd" id="ddStar"></span>Set aside first <small>locked every cutoff</small></h2>
     <div class="fixed" id="fixed"></div>
     <h2 class="hand"><span class="dd" id="ddBill"></span>Bills this period</h2>
@@ -459,6 +467,7 @@ input[type=date].field::-webkit-date-and-time-value{text-align:left}
     <div class="logtabs" id="logTabs" role="tablist" aria-label="Logbook">
       <button role="tab" data-t="exp" aria-selected="true">Expenses</button>
       <button role="tab" data-t="xfer" aria-selected="false">Transfers</button>
+      <button role="tab" data-t="inc" aria-selected="false">Income</button>
     </div>
     <div class="bymode" id="bymode"></div>
     <div class="log" id="log"></div>
@@ -527,6 +536,23 @@ input[type=date].field::-webkit-date-and-time-value{text-align:left}
   <div class="stickysave"><button class="primary" id="xferSave">Transfer</button></div>
 </section>
 
+<section class="sheet" id="incSheet" role="dialog" aria-modal="true" aria-labelledby="incTitle">
+  <div class="grab"></div>
+  <h3 id="incTitle">Add income</h3>
+  <div class="chips" id="incKind" role="radiogroup" aria-label="Kind"></div>
+  <div class="paywith" id="incTo" role="radiogroup" aria-label="Goes to"></div>
+  <div class="form">
+    <label for="incIn">Amount</label>
+    <div class="money"><input class="field" id="incIn" inputmode="decimal" enterkeyhint="next" placeholder="0" autocomplete="off"></div>
+    <div class="row2" style="margin:8px 0 0">
+      <input class="field" id="incNote" placeholder="Note (optional)" maxlength="60" autocomplete="off" enterkeyhint="done">
+      <input class="field" id="incDate" type="date" aria-label="Date">
+    </div>
+    <p class="note" id="incNoteLine"></p>
+  </div>
+  <div class="stickysave"><button class="primary" id="incSave">Add income</button></div>
+</section>
+
 <section class="sheet" id="paySheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
   <div class="grab"></div>
   <h3 id="payTitle">Pay this cutoff</h3>
@@ -537,6 +563,7 @@ input[type=date].field::-webkit-date-and-time-value{text-align:left}
     <input class="field" id="paidOn" type="date">
     <p class="note" id="paidWhy"></p>
     <label class="check"><input type="checkbox" id="payDefault" checked> Use this for every cutoff</label>
+    <div class="paywith" id="payInto" role="radiogroup" aria-label="Lands in" style="margin-top:12px"></div>
     <p class="note">Family support and savings (₱3,000) come out of this first.</p>
   </div>
   <button class="primary" id="paySave" style="margin-top:16px">Save pay</button>
@@ -672,11 +699,11 @@ const FONTS = [
 ];
 const FIXED_TOTAL = FIXED.reduce((s, f) => s + f.amount, 0);
 const KEY = 'cutoff-journal-v1';
-const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], accounts:[{id:'cbc', name:'Chinabank', kind:'digital', base:null, setAt:0}, {id:'mari', name:'Maribank', kind:'digital', base:null, setAt:0}, {id:'gcash', name:'GCash', kind:'digital', base:null, setAt:0}, {id:'cash', name:'Cash', kind:'cash', base:null, setAt:0}], lastPay:'cash', font:'journal', customCats:[], entries:[], transfers:[], pinHash:null, pinAlgo:null};
+const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], accounts:[{id:'cbc', name:'Chinabank', kind:'digital', base:null, setAt:0}, {id:'mari', name:'Maribank', kind:'digital', base:null, setAt:0}, {id:'gcash', name:'GCash', kind:'digital', base:null, setAt:0}, {id:'cash', name:'Cash', kind:'cash', base:null, setAt:0}], lastPay:'cash', font:'journal', customCats:[], entries:[], transfers:[], income:[], payAcct:'cbc', pinHash:null, pinAlgo:null};
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function normalize(d){
-  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), accounts:Array.isArray(d.accounts) ? d.accounts : structuredClone(DEFAULTS.accounts), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : [], transfers:Array.isArray(d.transfers) ? d.transfers : []};
+  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), accounts:Array.isArray(d.accounts) ? d.accounts : structuredClone(DEFAULTS.accounts), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : [], transfers:Array.isArray(d.transfers) ? d.transfers : [], income:Array.isArray(d.income) ? d.income : []};
   delete s.budgets; delete s.memories; return s;
 }
 function load(){ try{ const raw = localStorage.getItem(KEY); if(raw) return normalize(JSON.parse(raw)); }catch(e){} return structuredClone(DEFAULTS); }
@@ -795,11 +822,12 @@ function cutData(key){
   entries.forEach(x => { by[x.cat] = round2((by[x.cat] || 0) + x.amount); count[x.cat] = (count[x.cat] || 0) + 1; });
   // transfers only move money; a transfer's fee is the one part that counts as spending
   const xfers = state.transfers.filter(x => x.date >= s && x.date <= e);
+  const incs = state.income.filter(x => x.date >= s && x.date <= e);
   const fees = round2(xfers.reduce((a, x) => a + (x.fee || 0), 0));
   const spent = round2(entries.reduce((a, x) => a + x.amount, 0) + fees);
   const pay = state.payOverrides[key] ?? state.pay;
   const bills = billsIn(start, end), billTotal = round2(bills.reduce((a, b) => a + b.amount, 0));
-  return {start, end, entries, xfers, fees, by, count, spent, pay, bills, billTotal, remaining: round2(pay - FIXED_TOTAL - billTotal - spent)};
+  return {start, end, entries, xfers, incs, fees, by, count, spent, pay, bills, billTotal, remaining: round2(pay - FIXED_TOTAL - billTotal - spent)};
 }
 
 function countTo(el, from, to){
@@ -825,7 +853,30 @@ function renderHeader(){
   $('dots').innerHTML = dots + `<span class="dot payday ${np <= t ? 'past' : ''}" title="Next pay"></span>`;
 }
 
+function sweepSavings(){
+  if(!state.saveInit){
+    if(!acctOf('save')) state.accounts.push({id:'save', name:'Savings', kind:'digital', base:0, setAt:Date.now()});
+    state.saveInit = true; state.sweepFrom = cutKey(today()); state.swept = {}; save();
+  }
+  const sv = acctOf('save'); if(!sv || !acctOf(state.payAcct)) return;
+  state.swept ||= {};
+  const t = today(), notes = [];
+  for(let k = state.sweepFrom, i = 0; i < 48; i++, k = shiftCut(k, 1)){
+    const d = cutData(k); if(d.end >= t) break;
+    if(state.swept[k]) continue;
+    const extra = d.incs.reduce((s, x) => s + x.amount, 0);
+    const left = d.pay ? round2(d.remaining + extra) : 0;
+    if(left > 0){
+      state.transfers.push({id:'t' + Date.now().toString(36) + i, from:state.payAcct, to:'save', amount:left, fee:0, date:iso(addDays(d.end, 1)), ts:Date.now(), auto:k});
+      notes.push(`Saved ${peso(left)} left from ${rangeLabel(d.start, d.end)}`);
+    }
+    state.swept[k] = true;
+  }
+  if(notes.length){ save(); setTimeout(() => toast(notes.join(' · ')), 600); }
+}
+
 function render(){
+  sweepSavings();
   renderHeader();
   const d = cutData(viewKey), t = today(), isCur = viewKey === cutKey(t);
   const enter = firstPaint ? 'enter' : '';
@@ -908,8 +959,9 @@ function render(){
   $('logTabs').querySelectorAll('button').forEach(b => {
     b.setAttribute('aria-selected', b.dataset.t === logTab);
     if(b.dataset.t === 'xfer') b.textContent = d.xfers.length ? `Transfers · ${d.xfers.length}` : 'Transfers';
+    if(b.dataset.t === 'inc') b.textContent = d.incs.length ? `Income · ${d.incs.length + (d.pay ? 1 : 0)}` : 'Income';
   });
-  if(logTab === 'xfer') renderXfers(d, t, enter); else {
+  if(logTab === 'inc') renderIncome(d, t, enter); else if(logTab === 'xfer') renderXfers(d, t, enter); else {
   // this period's spending by how it was paid
   const modes = {};
   d.entries.forEach(x => { const k = x.pay && acctOf(x.pay) ? x.pay : '_none'; modes[k] = round2((modes[k] || 0) + x.amount); });
@@ -951,12 +1003,13 @@ const ICON = {
   digital:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg>',
   cash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>',
 };
+ICON.save = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 11.5a7 6 0 0 1 12.2-3.7H19v3l2 1v3.4h-2.4a7 6 0 0 1-2.6 1.9V20h-3v-2h-3v2H7v-3.2a6 6 0 0 1-2.5-5.3z"/><path d="M10 7.2h4"/></svg>';
 const acctOf = id => state.accounts.find(a => a.id === id);
 // each account's own color (a bank's color, editable in Settings) and optional uploaded icon
-const BRAND = {cbc:'#C8102E', mari:'#D2461A', gcash:'#0068D9', cash:'#237F59'};
+const BRAND = {cbc:'#C8102E', mari:'#D2461A', gcash:'#0068D9', cash:'#237F59', save:'#B2385A'};
 const colorOf = a => a.color || BRAND[a.id] || (a.kind === 'cash' ? '#237F59' : '#2F6DBE');
 function tintOf(hex){ const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, k = .84; return `rgb(${Math.round(r + (255 - r) * k)},${Math.round(g + (255 - g) * k)},${Math.round(b + (255 - b) * k)})`; }
-const iconOf = (a, size) => a.icon ? `<img class="aico" src="${a.icon}" alt="" width="${size}" height="${size}">` : (ICON[a.kind] || ICON.digital);
+const iconOf = (a, size) => a.icon ? `<img class="aico" src="${a.icon}" alt="" width="${size}" height="${size}">` : a.id === 'save' ? ICON.save : (ICON[a.kind] || ICON.digital);
 // what an account holds now: the balance you last set, less what you paid from it since
 // what an account holds now: the balance you last set, less what you paid from it since,
 // plus or minus the transfers since (skip leaves one transfer out, for previews while editing it)
@@ -966,7 +1019,19 @@ function balanceOf(a, skip){
   const xs = state.transfers.filter(x => x.id !== skip && x.ts > a.setAt);
   const out = xs.filter(x => x.from === a.id).reduce((s, x) => s + x.amount + (x.fee || 0), 0);
   const inn = xs.filter(x => x.to === a.id).reduce((s, x) => s + x.amount, 0);
-  return round2(a.base - spent - out + inn);
+  const extra = state.income.filter(x => x.to === a.id && x.id !== skip && x.ts > a.setAt).reduce((s, x) => s + x.amount, 0);
+  const salary = a.id === state.payAcct ? salaryDeposits(a.setAt).reduce((s, x) => s + x.amount, 0) : 0;
+  return round2(a.base - spent - out + inn + extra + salary);
+}
+// each payday after `since` (a timestamp) up to today, with that cutoff's take-home pay
+function salaryDeposits(since){
+  const out = [], t = today(), last = cutKey(t);
+  let k = cutKey(new Date(since || Date.now()));
+  for(let i = 0; i < 240 && k <= last; i++, k = shiftCut(k, 1)){
+    const pd = payday(k), amount = state.payOverrides[k] ?? state.pay;
+    if(+pd > since && pd <= t && amount > 0) out.push({key:k, date:iso(pd), amount});
+  }
+  return out;
 }
 function renderAccounts(enter){
   const totals = {digital:0, cash:0}, any = {digital:false, cash:false};
@@ -991,7 +1056,7 @@ function openAcct(id){
   $('acctTitle').textContent = a.name;
   $('acctFor').textContent = `How much is in ${a.name} right now?`;
   $('acctIn').value = b === null ? '' : b;
-  $('acctNote').textContent = `Expenses paid with ${a.name} and transfers in or out update this automatically.`;
+  $('acctNote').textContent = `Expenses, transfers and income for ${a.name} update this automatically.` + (a.id === state.payAcct ? ' Your salary is added here on each payday.' : '');
   showSheet($('acctSheet'));
   setTimeout(() => $('acctIn').focus({preventScroll:true}), 350);
 }
@@ -1027,7 +1092,7 @@ function renderXfers(d, t, enter){
   items.forEach((x, i) => {
     if(x.date !== lastD){ lastD = x.date; const dd = parse(x.date); html += `<div class="day">${iso(dd) === iso(t) ? 'Today' : `${MON[dd.getMonth()]} ${dd.getDate()}`}</div>`; }
     const f = xAcct(x.from), to = xAcct(x.to), fc = colorOf(f), tc = colorOf(to);
-    const sub = xferKind(x) + (x.fee > 0 ? ` · Fee ${peso(x.fee)}` : '');
+    const sub = (x.auto ? `Left over from ${rangeLabel(cutRange(x.auto).start, cutRange(x.auto).end)}` : xferKind(x)) + (x.fee > 0 ? ` · Fee ${peso(x.fee)}` : '');
     html += `<div class="entry ${x.id === freshId ? 'in' : enter}" data-xf="${x.id}" role="button" tabindex="0" aria-label="Edit transfer of ${peso(x.amount)} from ${esc(f.name)} to ${esc(to.name)}" style="--i:${Math.min(i, 8) + 8};--c:${tc}">
       <div class="art xart" style="background:linear-gradient(135deg,${fc} 0 50%,${tc} 50% 100%)">${ARROWS}</div>
       <div class="t"><div>${esc(f.name)} → ${esc(to.name)}</div><span>${sub}</span></div>
@@ -1115,6 +1180,107 @@ $('xferSave').onclick = () => {
   state.lastXfer = {from:xferFrom, to:xferTo};
   const k = cutKey(parse(date)); if(k !== viewKey) viewKey = k;
   logTab = 'xfer'; xferEditing = null;
+  save(); hideSheet(); shownRemaining = null; render();
+};
+
+/* ---------- income ---------- */
+const INC = {
+  salary:    {label:'Salary',       c:'#237F59', bg:'#DBF5E8', art:'savings'},
+  thirteenth:{label:'13th month',   c:'#9A6A00', bg:'#FFF1C2', art:'gift'},
+  bonus:     {label:'Bonus',        c:'#C42F62', bg:'#FFE1EB', art:'gift'},
+  other:     {label:'Other income', c:'#2F6DBE', bg:'#DFEFFF', art:'wallet'},
+};
+const incOf = k => INC[k] || INC.other;
+function renderIncome(d, t, enter){
+  const extra = round2(d.incs.reduce((s, x) => s + x.amount, 0));
+  const rows = d.incs.map(x => ({...x, kind:x.kind}));
+  if(d.pay) rows.push({id:'salary', kind:'salary', amount:d.pay, to:state.payAcct, date:iso(d.start), ts:0, salary:true});
+  $('bymode').innerHTML = rows.length ? [d.pay ? `<span>Salary <b>${peso(d.pay)}</b></span>` : '', extra ? `<span>Extra <b>${peso(extra)}</b></span>` : ''].join('') : '';
+  if(!rows.length){
+    $('log').innerHTML = `<div class="empty ${enter}" style="--i:8">${ART.savings}<div><b>No income yet</b>Set your pay, or tap "Add income" under Money on hand for a 13th month or bonus.</div></div>`;
+    return;
+  }
+  rows.sort((a, b) => b.date.localeCompare(a.date) || b.ts - a.ts);
+  let html = '', lastD = '';
+  rows.forEach((x, i) => {
+    if(x.date !== lastD){ lastD = x.date; const dd = parse(x.date); html += `<div class="day">${iso(dd) === iso(t) ? 'Today' : `${MON[dd.getMonth()]} ${dd.getDate()}`}</div>`; }
+    const k = incOf(x.kind), acct = acctOf(x.to), soon = x.salary && parse(x.date) > t;
+    const sub = [x.salary ? payName(viewKey) : (x.note || ''), acct ? (soon ? `Lands in ${acct.name}` : acct.name) : ''].filter(Boolean).join(' · ');
+    html += `<div class="entry ${soon ? 'soon' : ''} ${x.id === freshId ? 'in' : enter}" data-inc="${x.id}" role="button" tabindex="0" aria-label="Edit ${k.label} ${peso(x.amount)}" style="--i:${Math.min(i, 8) + 8};--c:${k.c};--c-bg:${k.bg}">
+      <div class="art">${ART[k.art]}</div>
+      <div class="t"><div>${k.label}</div>${sub ? `<span>${esc(sub)}</span>` : ''}</div>
+      <div class="a plus">+${peso(x.amount)}</div>
+      ${x.salary ? '<span></span>' : `<button class="del" data-id="${x.id}" aria-label="Delete ${k.label} ${peso(x.amount)}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`}
+    </div>`;
+  });
+  $('log').innerHTML = html;
+  $('log').querySelectorAll('.del').forEach(b => b.onclick = ev => { ev.stopPropagation(); removeInc(b.dataset.id, b.closest('.entry')); });
+  $('log').querySelectorAll('.entry').forEach(row => {
+    const open = () => row.dataset.inc === 'salary' ? openPay() : openInc(row.dataset.inc);
+    row.onclick = open;
+    row.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); open(); } };
+  });
+}
+function removeInc(id, row){
+  const go = () => {
+    const i = state.income.findIndex(x => x.id === id); if(i < 0) return;
+    const [x] = state.income.splice(i, 1); save(); render();
+    toast(`Deleted ${incOf(x.kind).label}`, 'Undo', () => { state.income.splice(i, 0, x); save(); render(); });
+  };
+  if(reduced || !row) return go();
+  row.animate([{transform:'none', opacity:1}, {transform:'translateX(-40%) rotate(-3deg)', opacity:0}], {duration:240, easing:'cubic-bezier(.4,0,1,1)'}).onfinish = go;
+}
+
+// account chips shared by the income sheet and the pay sheet
+function acctChips(el, label, sel, pick){
+  el.innerHTML = `<div class="lbl">${label}</div>` + state.accounts.map(a => `<button class="pw" role="radio" data-id="${a.id}" aria-checked="${a.id === sel}" style="--pc:${colorOf(a)};--pb:${tintOf(colorOf(a))}">${iconOf(a, 20)}${esc(a.name)}</button>`).join('');
+  el.querySelectorAll('.pw').forEach(b => b.onclick = () => pick(b.dataset.id));
+}
+let incKind = 'thirteenth', incTo = null, incEditing = null;
+function drawInc(){
+  $('incKind').innerHTML = ['thirteenth', 'bonus', 'other'].map(k => { const v = INC[k]; return `<button class="chip" role="radio" data-k="${k}" aria-checked="${k === incKind}" style="--c:${v.c};--c-bg:${v.bg}">${k === 'other' ? 'Other' : v.label}</button>`; }).join('');
+  $('incKind').querySelectorAll('.chip').forEach(b => b.onclick = () => { incKind = b.dataset.k; drawInc(); });
+  acctChips($('incTo'), 'Goes to', incTo, id => { incTo = id; drawInc(); });
+  incPreview();
+}
+function incPreview(){
+  const n = numIn($('incIn')), a = acctOf(incTo);
+  $('incSave').textContent = incEditing ? 'Save changes' : n > 0 && a ? `Add ${peso(n)} to ${a.name}` : 'Add income';
+  const b = a ? balanceOf(a, incEditing) : null;
+  const line = a && n > 0 ? (b === null ? `${esc(a.name)} has no balance set yet.` : `${esc(a.name)}: ${peso(b)} → <b>${peso(b + n)}</b>`) : '';
+  $('incNoteLine').innerHTML = (line ? line + '<br>' : '') + 'Extra pay stays out of your cutoff budget. Only the account balance goes up.';
+}
+function openInc(id){
+  const x = id && state.income.find(v => v.id === id);
+  incEditing = x ? x.id : null;
+  $('incTitle').textContent = x ? `Edit ${incOf(x.kind).label}` : 'Add income';
+  if(x){ incKind = x.kind; incTo = x.to; $('incIn').value = x.amount; $('incNote').value = x.note || ''; $('incDate').value = x.date; }
+  else { incKind = 'thirteenth'; incTo = acctOf(state.payAcct) ? state.payAcct : state.accounts[0]?.id; $('incIn').value = ''; $('incNote').value = ''; $('incDate').value = iso(today()); }
+  if(!state.accounts.length){ toast('Add an account in Settings first'); return; }
+  drawInc(); showSheet($('incSheet'));
+}
+$('incBtn').onclick = () => openInc();
+$('incIn').oninput = incPreview;
+$('incIn').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); $('incNote').focus(); } };
+$('incNote').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); $('incSave').click(); } };
+$('incSave').onclick = () => {
+  const n = numIn($('incIn'));
+  if(!(n > 0)){ shake($('incIn')); $('incIn').focus(); return; }
+  if(!acctOf(incTo)){ shake($('incTo')); return; }
+  const date = $('incDate').value || iso(today()), a = acctOf(incTo), note = $('incNote').value.trim();
+  const old = incEditing && state.income.find(v => v.id === incEditing);
+  if(old){
+    const before = {...old};
+    Object.assign(old, {kind:incKind, to:incTo, amount:n, date, note});
+    toast('Income updated', 'Undo', () => { Object.keys(old).forEach(k => delete old[k]); Object.assign(old, before); save(); render(); });
+  } else {
+    const x = {id:'i' + Date.now().toString(36), kind:incKind, to:incTo, amount:n, date, note, ts:Date.now()};
+    state.income.push(x); freshId = x.id;
+    toast(`${incOf(incKind).label}: +${peso(n)} to ${a.name}`); burst();
+  }
+  const k = cutKey(parse(date)); if(k !== viewKey) viewKey = k;
+  logTab = 'inc'; incEditing = null;
   save(); hideSheet(); shownRemaining = null; render();
 };
 
@@ -1315,6 +1481,8 @@ function removeEntry(id, row){
 }
 
 /* ---------- pay ---------- */
+let payInto = null;
+function drawPayInto(){ acctChips($('payInto'), 'Lands in (added on payday)', payInto, id => { payInto = id; drawPayInto(); }); }
 function openPay(){
   const d = cutData(viewKey), why = whyMoved(viewKey);
   $('payTitle').textContent = `Your ${payName(viewKey)}`;
@@ -1323,6 +1491,7 @@ function openPay(){
   $('paidOn').value = iso(payday(viewKey));
   $('paidWhy').textContent = why && !state.paydayOverrides[viewKey] ? `Moved earlier because ${why}.` : 'Change it if your pay came on another day.';
   $('payDefault').checked = !(viewKey in state.payOverrides) || !state.pay;
+  payInto = acctOf(state.payAcct) ? state.payAcct : null; drawPayInto();
   showSheet($('paySheet'));
   setTimeout(() => $('payIn').focus({preventScroll:true}), 350);
 }
@@ -1335,6 +1504,7 @@ $('paySave').onclick = () => {
     if(dt <= prev || dt >= next){ $('paidWhy').textContent = `Pick a day between ${dayName(addDays(prev, 1))} and ${dayName(addDays(next, -1))}.`; shake($('paidOn')); return; }
     if(on === iso(autoPayday(viewKey))) delete state.paydayOverrides[viewKey]; else state.paydayOverrides[viewKey] = on;
   }
+  if(payInto) state.payAcct = payInto;
   if($('payDefault').checked){ state.pay = n; delete state.payOverrides[viewKey]; }
   else state.payOverrides[viewKey] = n;
   save(); hideSheet(); shownRemaining = null; render();
