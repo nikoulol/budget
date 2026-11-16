@@ -148,23 +148,32 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .fx .lock{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--paper);display:grid;place-items:center}
 
 .accts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.acct{position:relative;text-align:left;border-radius:18px;padding:12px 14px 13px;background:var(--c-bg);color:var(--ink);transition:transform .16s var(--ease-out)}
+.acct{position:relative;overflow:hidden;text-align:left;border-radius:18px;padding:12px 14px 13px;background:var(--c);color:#fff;transition:transform .16s var(--ease-out)}
+.acct::after{content:"";position:absolute;right:-26px;top:-26px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12)}
 .acct:active{transform:scale(.97)}
-.acct .an{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--c);font-weight:var(--w)}
-.acct .an svg{flex:none}
-.acct .ab{display:block;margin-top:4px;font-size:21px;font-weight:var(--wb);font-variant-numeric:tabular-nums;line-height:1.15}
-.acct .ab.unset{font-size:15px;font-weight:var(--w);color:var(--c)}
-.acct .as{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
-.acct.neg .ab{color:var(--pink)}
+.acct .an{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:var(--w)}
+.acct .an svg{flex:none;width:22px;height:22px;padding:3px;border-radius:7px;background:rgba(255,255,255,.2)}
+.aico{flex:none;border-radius:7px;object-fit:cover;background:#fff}
+.acct .ab{display:block;margin-top:6px;font-size:21px;font-weight:var(--wb);font-variant-numeric:tabular-nums;line-height:1.15}
+.acct .ab.unset{font-size:15px;font-weight:var(--w)}
+.acct .as{display:block;font-size:12px;color:rgba(255,255,255,.86);margin-top:2px}
+.acct.neg .ab{color:#FFE3EC}
 .paywith{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:0 0 10px}
-.paywith .pw{height:36px;padding:0 13px;border-radius:12px;background:var(--paper-3);color:var(--ink-2);font-size:14px;display:inline-flex;align-items:center;gap:6px;transition:transform .16s var(--spring),background .2s,color .2s}
+.paywith .pw{height:38px;padding:0 12px 0 8px;border-radius:12px;background:var(--pb);color:var(--pc);font-size:14px;font-weight:var(--w);display:inline-flex;align-items:center;gap:6px;transition:transform .16s var(--spring),background .2s,color .2s}
 .paywith .pw:active{transform:scale(.92)}
-.paywith .pw[aria-checked="true"]{background:var(--ink);color:#fff;font-weight:var(--w)}
+.paywith .pw[aria-checked="true"]{background:var(--pc);color:#fff;box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--pc)}
 .paywith .lbl{width:100%;text-align:center;font-size:13px;color:var(--ink-2);margin-bottom:2px}
 .bymode{display:flex;gap:6px;flex-wrap:wrap;margin:0 4px 6px}
 .bymode span{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--paper-3);color:var(--ink-2)}
 .bymode b{color:var(--ink);font-weight:var(--wb);font-variant-numeric:tabular-nums}
-.ae{background:var(--paper-3);border-radius:16px;padding:8px;display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:8px}
+.ae{background:var(--paper-3);border-radius:16px;padding:8px;display:grid;grid-template-columns:44px 1fr auto;grid-template-areas:"ic nm co" "ic kd x";gap:6px;align-items:center;margin-bottom:8px}
+.ae .aicon{grid-area:ic;width:44px;height:44px;border-radius:12px;background:var(--c);color:#fff;display:grid;place-items:center}
+.ae .aicon svg{width:24px;height:24px}
+.ae .aicon .aico{width:36px;height:36px}
+.ae .field{grid-area:nm}
+.ae .acolor{grid-area:co;justify-self:end;width:44px;height:44px;border:0;padding:0;background:none;border-radius:12px;cursor:pointer}
+.ae [data-k=kind]{grid-area:kd;justify-self:start}
+.ae [data-del]{grid-area:x}
 .ae .field{background:var(--paper);height:44px}
 .ae .chip{height:44px;min-width:76px}
 .ae .x{height:36px;padding:0 12px;border-radius:10px;background:#fff;color:var(--pink);font-size:13px}
@@ -198,7 +207,10 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 /* log */
 .log{display:flex;flex-direction:column}
 .day{font-family:var(--hand);font-size:calc(20px * var(--hs));font-weight:700;margin:12px 4px 2px;color:var(--ink-2)}
-.entry{display:grid;grid-template-columns:40px 1fr auto 40px;align-items:center;gap:10px;padding:6px 0 6px 4px;border-radius:14px}
+.entry{display:grid;grid-template-columns:40px 1fr auto 40px;align-items:center;gap:10px;padding:6px 0 6px 4px;border-radius:14px;cursor:pointer;transition:background .16s,transform .16s var(--ease-out)}
+.entry:active{background:var(--paper-3);transform:scale(.99)}
+.entry .a{display:inline-flex;align-items:center;gap:6px}
+.entry .cam{color:var(--pink)}
 .entry .art{width:40px;height:40px;border-radius:12px;background:var(--c-bg);padding:3px}
 .entry .t{line-height:1.25;min-width:0}
 .entry .t div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -465,6 +477,7 @@ input[type=date].field{width:150px;padding:0 10px}
     <input class="field" id="dateIn" type="date" aria-label="Date">
   </div>
   <div class="keys" id="keys"></div>
+  <button class="ghost" id="editPhoto" hidden style="margin:0 0 8px">Add a photo to Memories</button>
   <button class="primary" id="saveBtn">Save</button>
 </section>
 
@@ -501,7 +514,8 @@ input[type=date].field{width:150px;padding:0 10px}
     <label>Accounts</label>
     <div id="acctEdit"></div>
     <button class="ghost" id="addAcctBtn">Add an account</button>
-    <p class="note">Expenses paid from an account come off its balance. Tap a balance on the main page to correct it anytime.</p>
+    <input type="file" id="iconIn" accept="image/*" hidden>
+    <p class="note">Tap an icon to upload your own picture. Expenses paid from an account come off its balance. Tap a balance on the main page to correct it anytime.</p>
     <label>Monthly bills</label>
     <div id="billEdit"></div>
     <button class="ghost" id="addBillBtn">Add a bill</button>
@@ -868,16 +882,20 @@ function render(){
     items.forEach((e, i) => {
       if(e.date !== lastD){ lastD = e.date; const dd = parse(e.date); html += `<div class="day">${iso(dd) === iso(t) ? 'Today' : `${MON[dd.getMonth()]} ${dd.getDate()}`}</div>`; }
       const c = catOf(e.cat);
-      html += `<div class="entry ${e.id === freshId ? 'in' : enter}" style="--i:${Math.min(i, 8) + 8};--c:${c.c};--c-bg:${c.bg}">
+      html += `<div class="entry ${e.id === freshId ? 'in' : enter}" data-edit="${e.id}" role="button" tabindex="0" aria-label="Edit ${peso(e.amount)} ${esc(c.name)}" style="--i:${Math.min(i, 8) + 8};--c:${c.c};--c-bg:${c.bg}">
         <div class="art">${artOf(c)}</div>
         <div class="t"><div>${esc(e.note || c.name)}</div>${(() => { const sub = [e.note ? c.name : '', e.pay && acctOf(e.pay) ? acctOf(e.pay).name : ''].filter(Boolean).join(' · '); return sub ? `<span>${esc(sub)}</span>` : ''; })()}</div>
-        <div class="a">${peso(e.amount)}</div>
+        <div class="a">${e.photo ? '<svg class="cam" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Has a photo"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.2"/></svg>' : ''}${peso(e.amount)}</div>
         <button class="del" data-id="${e.id}" aria-label="Delete ${peso(e.amount)} ${esc(c.name)}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>`;
     });
     $('log').innerHTML = html;
-    $('log').querySelectorAll('.del').forEach(b => b.onclick = () => removeEntry(b.dataset.id, b.closest('.entry')));
+    $('log').querySelectorAll('.del').forEach(b => b.onclick = ev => { ev.stopPropagation(); removeEntry(b.dataset.id, b.closest('.entry')); });
+    $('log').querySelectorAll('.entry').forEach(row => {
+      row.onclick = () => openEdit(row.dataset.edit);
+      row.onkeydown = ev => { if(ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); openEdit(row.dataset.edit); } };
+    });
   }
   freshId = null; firstPaint = false;
 }
@@ -889,6 +907,11 @@ const ICON = {
   cash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>',
 };
 const acctOf = id => state.accounts.find(a => a.id === id);
+// each account's own color (a bank's color, editable in Settings) and optional uploaded icon
+const BRAND = {cbc:'#C8102E', mari:'#D2461A', gcash:'#0068D9', cash:'#237F59'};
+const colorOf = a => a.color || BRAND[a.id] || (a.kind === 'cash' ? '#237F59' : '#2F6DBE');
+function tintOf(hex){ const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255, k = .84; return `rgb(${Math.round(r + (255 - r) * k)},${Math.round(g + (255 - g) * k)},${Math.round(b + (255 - b) * k)})`; }
+const iconOf = (a, size) => a.icon ? `<img class="aico" src="${a.icon}" alt="" width="${size}" height="${size}">` : (ICON[a.kind] || ICON.digital);
 // what an account holds now: the balance you last set, less what you paid from it since
 function balanceOf(a){
   if(a.base === null || a.base === undefined) return null;
@@ -899,8 +922,8 @@ function renderAccounts(enter){
   $('accts').innerHTML = state.accounts.map((a, i) => {
     const k = KIND[a.kind] || KIND.digital, b = balanceOf(a), group = a.kind === 'cash' ? 'cash' : 'digital';
     if(b !== null){ totals[group] += b; any[group] = true; }
-    return `<button class="acct ${enter} ${b !== null && b < 0 ? 'neg' : ''}" data-id="${a.id}" style="--i:${i + 1};--c:${k.c};--c-bg:${k.bg}" aria-label="${esc(a.name)}: ${b === null ? 'set balance' : peso(b)}">
-      <span class="an">${ICON[a.kind] || ICON.digital}${esc(a.name)}</span>
+    return `<button class="acct ${enter} ${b !== null && b < 0 ? 'neg' : ''}" data-id="${a.id}" style="--i:${i + 1};--c:${colorOf(a)}" aria-label="${esc(a.name)}: ${b === null ? 'set balance' : peso(b)}">
+      <span class="an">${iconOf(a, 26)}${esc(a.name)}</span>
       ${b === null ? '<span class="ab unset">Set balance</span>' : `<span class="ab">${peso(b)}</span>`}
       <span class="as">${b === null ? 'Tap to add what it has' : 'Tap to correct'}</span></button>`;
   }).join('');
@@ -1018,9 +1041,11 @@ function showAmount(bump){
   else { const [i, f] = amountStr.split('.'); v.textContent = nf0.format(Number(i || 0)) + (f !== undefined ? '.' + f : ''); v.classList.remove('ph'); }
   if(bump){ v.classList.remove('bump'); void v.offsetWidth; v.classList.add('bump'); }
   const n = Number(amountStr) || 0, c = catOf(addCat);
-  $('saveBtn').textContent = n ? `Save ${peso(n)} to ${c.short}` : 'Save';
+  $('saveBtn').textContent = editingId ? 'Save changes' : n ? `Save ${peso(n)} to ${c.short}` : 'Save';
   const h = $('addHint'); h.classList.remove('err');
-  const so = cutData(cutKey(parse($('dateIn').value || iso(today())))).by[addCat] || 0;
+  const hk = cutKey(parse($('dateIn').value || iso(today())));
+  const was = editingId && state.entries.find(x => x.id === editingId);
+  const so = (cutData(hk).by[addCat] || 0) - (was && was.cat === addCat && cutKey(parse(was.date)) === hk ? was.amount : 0);
   h.textContent = n ? `${c.short} this cutoff: ${peso(so)} → ${peso(so + n)}` : `${c.short} this cutoff so far: ${peso(so)}`;
 }
 function defaultDate(){
@@ -1030,18 +1055,43 @@ function defaultDate(){
 let addPay = null;
 function drawPayWith(){
   if(!acctOf(addPay)) addPay = acctOf(state.lastPay) ? state.lastPay : (state.accounts[0] ? state.accounts[0].id : null);
-  $('payWith').innerHTML = '<div class="lbl">Paid with</div>' + state.accounts.map(a => `<button class="pw" role="radio" data-id="${a.id}" aria-checked="${a.id === addPay}">${ICON[a.kind] || ICON.digital}${esc(a.name)}</button>`).join('');
+  $('payWith').innerHTML = '<div class="lbl">Paid with</div>' + state.accounts.map(a => `<button class="pw" role="radio" data-id="${a.id}" aria-checked="${a.id === addPay}" style="--pc:${colorOf(a)};--pb:${tintOf(colorOf(a))}">${iconOf(a, 20)}${esc(a.name)}</button>`).join('');
   $('payWith').querySelectorAll('.pw').forEach(b => b.onclick = () => { addPay = b.dataset.id; drawPayWith(); });
 }
+let editingId = null;
 function openAdd(cat){
+  editingId = null; $('addTitle').textContent = 'Log expense'; $('editPhoto').hidden = true;
   amountStr = ''; $('noteIn').value = ''; $('dateIn').value = defaultDate(); addPay = null;
   drawPicker(); drawPayWith(); showSheet($('addSheet')); setCat(cat || addCat, false);
 }
+// tap a logbook entry: the same panel, filled in, to change anything or add a photo
+function openEdit(id){
+  const e = state.entries.find(x => x.id === id); if(!e) return;
+  editingId = id; $('addTitle').textContent = 'Edit expense'; $('editPhoto').hidden = false;
+  $('editPhoto').textContent = e.photo ? 'Add another photo to Memories' : 'Add a photo to Memories';
+  amountStr = String(e.amount); $('noteIn').value = e.note || ''; $('dateIn').value = e.date; addPay = e.pay || null;
+  drawPicker(); drawPayWith(); showSheet($('addSheet')); setCat(e.cat, false);
+}
+$('editPhoto').onclick = () => {
+  const e = state.entries.find(x => x.id === editingId); if(!e) return;
+  openMemFlow({date:$('dateIn').value || e.date, place:$('noteIn').value.trim(), kind:addCat, entryId:e.id});
+};
 $('dateIn').onchange = () => showAmount();
 $('saveBtn').onclick = () => {
   const n = round2(Number(amountStr) || 0);
   if(n <= 0){ shake($('amountBox')); const h = $('addHint'); h.textContent = 'Enter an amount first'; h.classList.add('err'); return; }
   const date = $('dateIn').value || iso(today());
+  if(editingId){
+    const e = state.entries.find(x => x.id === editingId);
+    if(e){
+      const before = {...e};
+      Object.assign(e, {cat:addCat, amount:n, note:$('noteIn').value.trim(), date});
+      if(addPay) e.pay = addPay; else delete e.pay;
+      save(); hideSheet(); shownRemaining = null; render();
+      toast('Changes saved', 'Undo', () => { Object.keys(e).forEach(k => delete e[k]); Object.assign(e, before); save(); render(); });
+    }
+    editingId = null; return;
+  }
   const e = {id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), cat:addCat, amount:n, note:$('noteIn').value.trim(), date, ts:Date.now(), ...(addPay ? {pay:addPay} : {})};
   if(addPay) state.lastPay = addPay;
   state.entries.push(e); save();
@@ -1126,13 +1176,17 @@ function drawFonts(){
   $('fonts').querySelectorAll('.fopt').forEach(b => b.onclick = () => { state.font = b.dataset.f; save(); applyFont(); drawFonts(); render(); });
 }
 function drawAccts(){
-  $('acctEdit').innerHTML = state.accounts.map((a, i) => `<div class="ae" data-i="${i}">
+  $('acctEdit').innerHTML = state.accounts.map((a, i) => `<div class="ae" data-i="${i}" style="--c:${colorOf(a)}">
+    <button class="aicon" data-k="icon" aria-label="Change ${esc(a.name)} icon">${iconOf(a, 30)}</button>
     <input class="field" id="an_${a.id}" value="${esc(a.name)}" maxlength="20" placeholder="Account name" aria-label="Account name" autocomplete="off">
+    <input type="color" class="acolor" data-k="color" value="${colorOf(a)}" aria-label="${esc(a.name)} color">
     <button class="chip" data-k="kind">${a.kind === 'cash' ? 'Cash' : 'Digital'}</button>
     <button class="x" data-del="${i}">Remove</button></div>`).join('');
   $('acctEdit').querySelectorAll('.ae').forEach(row => {
     const a = state.accounts[+row.dataset.i];
     row.querySelector('input').oninput = e => { a.name = e.target.value.trim() || a.name; save(); render(); };
+    row.querySelector('[data-k=icon]').onclick = () => { iconFor = a; $('iconIn').click(); };
+    row.querySelector('[data-k=color]').oninput = e => { a.color = e.target.value; row.style.setProperty('--c', a.color); save(); render(); };
     row.querySelector('[data-k=kind]').onclick = e => { a.kind = a.kind === 'cash' ? 'digital' : 'cash'; e.currentTarget.textContent = a.kind === 'cash' ? 'Cash' : 'Digital'; save(); render(); };
     row.querySelector('[data-del]').onclick = () => {
       const i = +row.dataset.i, [gone] = state.accounts.splice(i, 1); save(); drawAccts(); render();
@@ -1140,6 +1194,22 @@ function drawAccts(){
     };
   });
 }
+let iconFor = null;
+async function shrinkIcon(file){
+  const url = URL.createObjectURL(file);
+  try{
+    const img = new Image(); img.src = url; await img.decode();
+    const side = Math.min(img.naturalWidth, img.naturalHeight), cv = document.createElement('canvas'); cv.width = cv.height = 96;
+    cv.getContext('2d').drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, 96, 96);
+    return cv.toDataURL('image/png');
+  } finally { URL.revokeObjectURL(url); }
+}
+$('iconIn').onchange = async () => {
+  const f = $('iconIn').files[0]; $('iconIn').value = '';
+  if(!f || !iconFor) return;
+  try{ iconFor.icon = await shrinkIcon(f); save(); drawAccts(); render(); toast(`${iconFor.name} icon updated`); }
+  catch(e){ toast("That image couldn't be opened"); }
+};
 $('addAcctBtn').onclick = () => {
   state.accounts.push({id:'a' + Date.now().toString(36), name:'New account', kind:'digital', base:null, setAt:0});
   save(); drawAccts(); render();
@@ -1371,7 +1441,7 @@ async function renderMem(){
 
 let memDraft = {};
 function openMemSheet(pre){
-  memDraft = {photo:null, kind:pre.kind || 'dates'};
+  memDraft = {photo:null, kind:pre.kind || 'dates', entryId:pre.entryId};
   $('memPlace').value = pre.place || ''; $('memNote').value = ''; $('memDate').value = pre.date || iso(today());
   $('memHint').textContent = ''; $('memHint').classList.remove('err');
   $('photoBox').querySelector('img')?.remove(); $('photoPh').hidden = false;
@@ -1403,8 +1473,10 @@ $('memFile').onchange = async () => {
 $('memSave').onclick = async () => {
   if(!memDraft.photo){ shake($('photoBox')); $('memHint').textContent = 'Choose a photo first'; $('memHint').classList.add('err'); return; }
   const m = {id:'m' + Date.now().toString(36), photo:memDraft.photo, kind:memDraft.kind, date:$('memDate').value || iso(today()),
-    place:$('memPlace').value.trim(), note:$('memNote').value.trim(), ts:Date.now()};
+    place:$('memPlace').value.trim(), note:$('memNote').value.trim(), ts:Date.now(), ...(memDraft.entryId ? {entryId:memDraft.entryId} : {})};
   try{ await memPut(m); }catch(e){ $('memHint').textContent = 'Your phone is out of space for photos.'; $('memHint').classList.add('err'); return; }
+  const linked = m.entryId && state.entries.find(x => x.id === m.entryId);
+  if(linked){ linked.photo = true; save(); render(); }
   hideSheet(); if(view !== 'mem') setView('mem'); await renderMem(); burst(); toast('Memory saved');
 };
 
@@ -1430,6 +1502,7 @@ $('vclose').onclick = closeViewer;
 $('vdel').onclick = async () => {
   const m = vList[vIdx]; if(!m || !await askConfirm('Delete this memory?', 'The photo is gone for good.', 'Delete')) return;
   await memDel(m.id); vList.splice(vIdx, 1); await renderMem();
+  if(m.entryId && !memCache.some(x => x.entryId === m.entryId)){ const e = state.entries.find(x => x.id === m.entryId); if(e){ delete e.photo; save(); render(); } }
   if(!vList.length) closeViewer(); else { if(vIdx >= vList.length) vIdx = vList.length - 1; showStory(); }
 };
 
