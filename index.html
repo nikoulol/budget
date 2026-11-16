@@ -147,6 +147,27 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .fx .amt{font-size:21px;font-weight:var(--wb);font-variant-numeric:tabular-nums;color:var(--ink)}
 .fx .lock{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--paper);display:grid;place-items:center}
 
+.accts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.acct{position:relative;text-align:left;border-radius:18px;padding:12px 14px 13px;background:var(--c-bg);color:var(--ink);transition:transform .16s var(--ease-out)}
+.acct:active{transform:scale(.97)}
+.acct .an{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--c);font-weight:var(--w)}
+.acct .an svg{flex:none}
+.acct .ab{display:block;margin-top:4px;font-size:21px;font-weight:var(--wb);font-variant-numeric:tabular-nums;line-height:1.15}
+.acct .ab.unset{font-size:15px;font-weight:var(--w);color:var(--c)}
+.acct .as{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
+.acct.neg .ab{color:var(--pink)}
+.paywith{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:0 0 10px}
+.paywith .pw{height:36px;padding:0 13px;border-radius:12px;background:var(--paper-3);color:var(--ink-2);font-size:14px;display:inline-flex;align-items:center;gap:6px;transition:transform .16s var(--spring),background .2s,color .2s}
+.paywith .pw:active{transform:scale(.92)}
+.paywith .pw[aria-checked="true"]{background:var(--ink);color:#fff;font-weight:var(--w)}
+.paywith .lbl{width:100%;text-align:center;font-size:13px;color:var(--ink-2);margin-bottom:2px}
+.bymode{display:flex;gap:6px;flex-wrap:wrap;margin:0 4px 6px}
+.bymode span{font-size:13px;padding:5px 10px;border-radius:999px;background:var(--paper-3);color:var(--ink-2)}
+.bymode b{color:var(--ink);font-weight:var(--wb);font-variant-numeric:tabular-nums}
+.ae{background:var(--paper-3);border-radius:16px;padding:8px;display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;margin-bottom:8px}
+.ae .field{background:var(--paper);height:44px}
+.ae .chip{height:44px;min-width:76px}
+.ae .x{height:36px;padding:0 12px;border-radius:10px;background:#fff;color:var(--pink);font-size:13px}
 .bills{display:flex;flex-direction:column;gap:8px}
 .bill{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:10px 14px 10px 10px;border-radius:18px;background:#DDF3E6}
 .bill .art{width:44px;height:44px}
@@ -400,6 +421,8 @@ input[type=date].field{width:150px;padding:0 10px}
   <h1 class="sr-only">Cutoff Journal</h1>
   <div id="moneyView">
     <section class="hero" id="hero"></section>
+    <h2 class="hand"><span class="dd" id="ddCoin"></span>Money on hand <small id="moneySub"></small></h2>
+    <div class="accts" id="accts"></div>
     <h2 class="hand"><span class="dd" id="ddStar"></span>Set aside first <small>locked every cutoff</small></h2>
     <div class="fixed" id="fixed"></div>
     <h2 class="hand"><span class="dd" id="ddBill"></span>Bills this period</h2>
@@ -407,6 +430,7 @@ input[type=date].field{width:150px;padding:0 10px}
     <h2 class="hand"><span class="dd" id="ddSpark"></span>Spending</h2>
     <div class="cats" id="cats"></div>
     <h2 class="hand"><span class="dd" id="ddHeart"></span>Logbook <span class="dd wide" id="ddSquig"></span></h2>
+    <div class="bymode" id="bymode"></div>
     <div class="log" id="log"></div>
   </div>
   <div id="memView" hidden>
@@ -435,12 +459,24 @@ input[type=date].field{width:150px;padding:0 10px}
   <div class="amount" id="amountBox" aria-live="polite"><span class="cur">₱</span><span class="val ph" id="amountVal">0</span></div>
   <div class="hint" id="addHint"></div>
   <div class="chips" id="chips"></div>
+  <div class="paywith" id="payWith" role="radiogroup" aria-label="Paid with"></div>
   <div class="row2">
     <input class="field" id="noteIn" placeholder="Note (optional)" maxlength="60" autocomplete="off" enterkeyhint="done">
     <input class="field" id="dateIn" type="date" aria-label="Date">
   </div>
   <div class="keys" id="keys"></div>
   <button class="primary" id="saveBtn">Save</button>
+</section>
+
+<section class="sheet" id="acctSheet" role="dialog" aria-modal="true" aria-labelledby="acctTitle">
+  <div class="grab"></div>
+  <h3 id="acctTitle">Balance</h3>
+  <div class="form">
+    <label for="acctIn" id="acctFor">How much is in it right now?</label>
+    <div class="money"><input class="field" id="acctIn" inputmode="decimal" placeholder="0" autocomplete="off"></div>
+    <p class="note" id="acctNote"></p>
+  </div>
+  <button class="primary" id="acctSave" style="margin-top:16px">Save balance</button>
 </section>
 
 <section class="sheet" id="paySheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
@@ -462,6 +498,10 @@ input[type=date].field{width:150px;padding:0 10px}
   <div class="grab"></div>
   <h3 id="setTitle">Settings</h3>
   <div class="form">
+    <label>Accounts</label>
+    <div id="acctEdit"></div>
+    <button class="ghost" id="addAcctBtn">Add an account</button>
+    <p class="note">Expenses paid from an account come off its balance. Tap a balance on the main page to correct it anytime.</p>
     <label>Monthly bills</label>
     <div id="billEdit"></div>
     <button class="ghost" id="addBillBtn">Add a bill</button>
@@ -583,11 +623,11 @@ const FONTS = [
 ];
 const FIXED_TOTAL = FIXED.reduce((s, f) => s + f.amount, 0);
 const KEY = 'cutoff-journal-v1';
-const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
+const DEFAULTS = {pay:0, payOverrides:{}, paydayOverrides:{}, bills:[{id:'b1', name:'Spotify', amount:0, day:null, want:true}], accounts:[{id:'cbc', name:'Chinabank', kind:'digital', base:null, setAt:0}, {id:'mari', name:'Maribank', kind:'digital', base:null, setAt:0}, {id:'gcash', name:'GCash', kind:'digital', base:null, setAt:0}, {id:'cash', name:'Cash', kind:'cash', base:null, setAt:0}], lastPay:'cash', font:'journal', customCats:[], entries:[], pinHash:null, pinAlgo:null};
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function normalize(d){
-  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
+  const s = {...DEFAULTS, ...d, payOverrides:d.payOverrides || {}, paydayOverrides:d.paydayOverrides || {}, bills:Array.isArray(d.bills) ? d.bills : structuredClone(DEFAULTS.bills), accounts:Array.isArray(d.accounts) ? d.accounts : structuredClone(DEFAULTS.accounts), customCats:Array.isArray(d.customCats) ? d.customCats : [], entries:Array.isArray(d.entries) ? d.entries : []};
   delete s.budgets; delete s.memories; return s;
 }
 function load(){ try{ const raw = localStorage.getItem(KEY); if(raw) return normalize(JSON.parse(raw)); }catch(e){} return structuredClone(DEFAULTS); }
@@ -694,7 +734,7 @@ function wobble(pct, color, h = 16, sw = 7, track = '#ECE5CB'){
 /* ---------- render: money ---------- */
 const $ = id => document.getElementById(id);
 $('scene').insertAdjacentHTML('afterbegin', sceneSVG());
-$('ddStar').innerHTML = DOODLE.star; $('ddBill').innerHTML = DOODLE.sparkle; $('ddSpark').innerHTML = DOODLE.sparkle;
+$('ddStar').innerHTML = DOODLE.star; $('ddCoin').innerHTML = DOODLE.star; $('ddBill').innerHTML = DOODLE.sparkle; $('ddSpark').innerHTML = DOODLE.sparkle;
 $('ddHeart').innerHTML = DOODLE.heart; $('ddHeart2').innerHTML = DOODLE.heart; $('ddSquig').innerHTML = DOODLE.squiggle;
 let shownRemaining = null, freshId = null, firstPaint = true;
 
@@ -812,6 +852,14 @@ function render(){
     openAdd(b.dataset.cat);
   });
 
+  renderAccounts(enter);
+  // this period's spending by how it was paid
+  const modes = {};
+  d.entries.forEach(x => { const k = x.pay && acctOf(x.pay) ? x.pay : '_none'; modes[k] = round2((modes[k] || 0) + x.amount); });
+  const modeKeys = Object.keys(modes);
+  $('bymode').innerHTML = modeKeys.some(k => k !== '_none')
+    ? Object.entries(modes).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span>${k === '_none' ? 'Not set' : esc(acctOf(k).name)} <b>${peso(v)}</b></span>`).join('')
+    : '';
   const items = [...d.entries].sort((a,b) => b.date.localeCompare(a.date) || b.ts - a.ts);
   if(!items.length){
     $('log').innerHTML = `<div class="empty ${enter}" style="--i:8">${ART.notebook}<div><b>Fresh page</b>Tap a category or "Log expense" to add your first one.</div></div>`;
@@ -822,7 +870,7 @@ function render(){
       const c = catOf(e.cat);
       html += `<div class="entry ${e.id === freshId ? 'in' : enter}" style="--i:${Math.min(i, 8) + 8};--c:${c.c};--c-bg:${c.bg}">
         <div class="art">${artOf(c)}</div>
-        <div class="t"><div>${esc(e.note || c.name)}</div>${e.note ? `<span>${esc(c.name)}</span>` : ''}</div>
+        <div class="t"><div>${esc(e.note || c.name)}</div>${(() => { const sub = [e.note ? c.name : '', e.pay && acctOf(e.pay) ? acctOf(e.pay).name : ''].filter(Boolean).join(' · '); return sub ? `<span>${esc(sub)}</span>` : ''; })()}</div>
         <div class="a">${peso(e.amount)}</div>
         <button class="del" data-id="${e.id}" aria-label="Delete ${peso(e.amount)} ${esc(c.name)}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -833,6 +881,53 @@ function render(){
   }
   freshId = null; firstPaint = false;
 }
+
+/* ---------- money on hand ---------- */
+const KIND = {digital:{c:'#2F6DBE', bg:'#DFEFFF', label:'Digital'}, cash:{c:'#237F59', bg:'#DBF5E8', label:'Cash'}};
+const ICON = {
+  digital:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 18.5h3"/></svg>',
+  cash:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/></svg>',
+};
+const acctOf = id => state.accounts.find(a => a.id === id);
+// what an account holds now: the balance you last set, less what you paid from it since
+function balanceOf(a){
+  if(a.base === null || a.base === undefined) return null;
+  return round2(a.base - state.entries.filter(x => x.pay === a.id && x.ts > a.setAt).reduce((s, x) => s + x.amount, 0));
+}
+function renderAccounts(enter){
+  const totals = {digital:0, cash:0}, any = {digital:false, cash:false};
+  $('accts').innerHTML = state.accounts.map((a, i) => {
+    const k = KIND[a.kind] || KIND.digital, b = balanceOf(a), group = a.kind === 'cash' ? 'cash' : 'digital';
+    if(b !== null){ totals[group] += b; any[group] = true; }
+    return `<button class="acct ${enter} ${b !== null && b < 0 ? 'neg' : ''}" data-id="${a.id}" style="--i:${i + 1};--c:${k.c};--c-bg:${k.bg}" aria-label="${esc(a.name)}: ${b === null ? 'set balance' : peso(b)}">
+      <span class="an">${ICON[a.kind] || ICON.digital}${esc(a.name)}</span>
+      ${b === null ? '<span class="ab unset">Set balance</span>' : `<span class="ab">${peso(b)}</span>`}
+      <span class="as">${b === null ? 'Tap to add what it has' : 'Tap to correct'}</span></button>`;
+  }).join('');
+  $('accts').querySelectorAll('.acct').forEach(el => el.onclick = () => openAcct(el.dataset.id));
+  const parts = [];
+  if(any.digital) parts.push(`Digital ${peso(totals.digital)}`);
+  if(any.cash) parts.push(`Cash ${peso(totals.cash)}`);
+  $('moneySub').textContent = parts.join(' · ');
+}
+let acctEditing = null;
+function openAcct(id){
+  const a = acctOf(id); if(!a) return; acctEditing = id;
+  const b = balanceOf(a);
+  $('acctTitle').textContent = a.name;
+  $('acctFor').textContent = `How much is in ${a.name} right now?`;
+  $('acctIn').value = b === null ? '' : b;
+  $('acctNote').textContent = `Expenses you log as paid with ${a.name} come off this automatically.`;
+  showSheet($('acctSheet'));
+  setTimeout(() => $('acctIn').focus({preventScroll:true}), 350);
+}
+$('acctSave').onclick = () => {
+  const a = acctOf(acctEditing); if(!a) return;
+  const raw = String($('acctIn').value).replace(/[^0-9.\-]/g, '');
+  if(raw === '' || isNaN(Number(raw))){ shake($('acctIn')); $('acctIn').focus(); return; }
+  a.base = round2(Number(raw)); a.setAt = Date.now(); save(); hideSheet(); render();
+  toast(`${a.name}: ${peso(a.base)}`);
+};
 
 /* ---------- confetti ---------- */
 const PAPER = ['#FF6B5B','#FFD66B','#8EC3F0','#7FD6B0','#FFA6B8','#B49CF2','#FFF06A'];
@@ -932,25 +1027,32 @@ function defaultDate(){
   const t = today(), {start, end} = cutRange(viewKey);
   return (t >= start && t <= end) ? iso(t) : iso(end);
 }
+let addPay = null;
+function drawPayWith(){
+  if(!acctOf(addPay)) addPay = acctOf(state.lastPay) ? state.lastPay : (state.accounts[0] ? state.accounts[0].id : null);
+  $('payWith').innerHTML = '<div class="lbl">Paid with</div>' + state.accounts.map(a => `<button class="pw" role="radio" data-id="${a.id}" aria-checked="${a.id === addPay}">${ICON[a.kind] || ICON.digital}${esc(a.name)}</button>`).join('');
+  $('payWith').querySelectorAll('.pw').forEach(b => b.onclick = () => { addPay = b.dataset.id; drawPayWith(); });
+}
 function openAdd(cat){
-  amountStr = ''; $('noteIn').value = ''; $('dateIn').value = defaultDate();
-  drawPicker(); showSheet($('addSheet')); setCat(cat || addCat, false);
+  amountStr = ''; $('noteIn').value = ''; $('dateIn').value = defaultDate(); addPay = null;
+  drawPicker(); drawPayWith(); showSheet($('addSheet')); setCat(cat || addCat, false);
 }
 $('dateIn').onchange = () => showAmount();
 $('saveBtn').onclick = () => {
   const n = round2(Number(amountStr) || 0);
   if(n <= 0){ shake($('amountBox')); const h = $('addHint'); h.textContent = 'Enter an amount first'; h.classList.add('err'); return; }
   const date = $('dateIn').value || iso(today());
-  const e = {id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), cat:addCat, amount:n, note:$('noteIn').value.trim(), date, ts:Date.now()};
+  const e = {id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), cat:addCat, amount:n, note:$('noteIn').value.trim(), date, ts:Date.now(), ...(addPay ? {pay:addPay} : {})};
+  if(addPay) state.lastPay = addPay;
   state.entries.push(e); save();
   const k = cutKey(parse(date)); if(k !== viewKey){ viewKey = k; shownRemaining = null; }
   freshId = e.id;
   hideSheet(); render(); burst();
-  const c = catOf(addCat);
+  const c = catOf(addCat), from = addPay && acctOf(addPay) ? ` from ${acctOf(addPay).name}` : '';
   if(KINDS.some(k => k.id === addCat))
-    toast(`${peso(n)} added to ${c.short}`, 'Add photo', () => openMemFlow({date, place:e.note, kind:addCat}));
+    toast(`${peso(n)}${from} added to ${c.short}`, 'Add photo', () => openMemFlow({date, place:e.note, kind:addCat}));
   else
-    toast(`${peso(n)} added to ${c.short}`, 'Undo', () => { state.entries = state.entries.filter(x => x.id !== e.id); save(); render(); });
+    toast(`${peso(n)}${from} added to ${c.short}`, 'Undo', () => { state.entries = state.entries.filter(x => x.id !== e.id); save(); render(); });
 };
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){ if($('viewer').classList.contains('on')) closeViewer(); else hideSheet(); return; }
@@ -1023,8 +1125,28 @@ function drawFonts(){
     <div class="l">${f.label} · ${f.sans} + ${f.hand}</div></button>`).join('');
   $('fonts').querySelectorAll('.fopt').forEach(b => b.onclick = () => { state.font = b.dataset.f; save(); applyFont(); drawFonts(); render(); });
 }
+function drawAccts(){
+  $('acctEdit').innerHTML = state.accounts.map((a, i) => `<div class="ae" data-i="${i}">
+    <input class="field" id="an_${a.id}" value="${esc(a.name)}" maxlength="20" placeholder="Account name" aria-label="Account name" autocomplete="off">
+    <button class="chip" data-k="kind">${a.kind === 'cash' ? 'Cash' : 'Digital'}</button>
+    <button class="x" data-del="${i}">Remove</button></div>`).join('');
+  $('acctEdit').querySelectorAll('.ae').forEach(row => {
+    const a = state.accounts[+row.dataset.i];
+    row.querySelector('input').oninput = e => { a.name = e.target.value.trim() || a.name; save(); render(); };
+    row.querySelector('[data-k=kind]').onclick = e => { a.kind = a.kind === 'cash' ? 'digital' : 'cash'; e.currentTarget.textContent = a.kind === 'cash' ? 'Cash' : 'Digital'; save(); render(); };
+    row.querySelector('[data-del]').onclick = () => {
+      const i = +row.dataset.i, [gone] = state.accounts.splice(i, 1); save(); drawAccts(); render();
+      toast(`Removed ${gone.name}`, 'Undo', () => { state.accounts.splice(i, 0, gone); save(); drawAccts(); render(); });
+    };
+  });
+}
+$('addAcctBtn').onclick = () => {
+  state.accounts.push({id:'a' + Date.now().toString(36), name:'New account', kind:'digital', base:null, setAt:0});
+  save(); drawAccts(); render();
+  const rows = $('acctEdit').querySelectorAll('.ae'); const inp = rows[rows.length - 1].querySelector('input'); inp.focus(); inp.select();
+};
 function openSettings(){
-  drawCatList(); drawFonts(); drawBills();
+  drawAccts(); drawCatList(); drawFonts(); drawBills();
   $('defPay').value = state.pay || '';
   showSheet($('setSheet'));
 }
