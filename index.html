@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#93A8C4">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -288,7 +288,7 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 /* sheets */
 .scrim{position:fixed;inset:0;background:rgba(20,26,60,.32);opacity:0;pointer-events:none;transition:opacity .3s var(--ease-drawer);z-index:20}
 .scrim.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:480px;max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;
+.sheet{position:fixed;left:0;right:0;bottom:var(--kb,0px);margin:0 auto;max-width:480px;max-height:calc(94dvh - var(--kb,0px));overflow-y:auto;overscroll-behavior:contain;
   background:var(--paper);border-radius:26px 26px 0 0;padding:6px 16px calc(var(--safe-b) + 16px);z-index:21;
   transform:translateY(105%);transition:transform .45s var(--ease-drawer);box-shadow:0 -10px 40px rgba(20,26,60,.14);visibility:hidden}
 .sheet.open{transform:translateY(0);visibility:visible}
@@ -974,6 +974,18 @@ function confetti(x, y){
 const burst = () => { const r = $('mainBtn').getBoundingClientRect(); confetti(r.left + r.width/2, r.top); };
 
 /* ---------- sheets ---------- */
+// Keep sheets above the phone keyboard. The viewport tag asks the browser to shrink the
+// page for the keyboard; where it doesn't, lift the sheet by the keyboard's height instead.
+if(window.visualViewport){
+  const vv = window.visualViewport;
+  const fit = () => {
+    const kb = Math.max(0, Math.round(innerHeight - vv.height - vv.offsetTop));
+    document.documentElement.style.setProperty('--kb', (kb > 60 ? kb : 0) + 'px');
+    const f = document.activeElement;
+    if(kb > 60 && openSheet && f && openSheet.contains(f) && f.matches('input,textarea')) f.scrollIntoView({block:'nearest'});
+  };
+  vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
+}
 let openSheet = null, lastFocus = null;
 function showSheet(el){
   if(openSheet) hideSheet(true);
