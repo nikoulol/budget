@@ -323,8 +323,12 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 
 .amount{display:flex;align-items:baseline;justify-content:center;gap:4px;margin:6px 0 2px;min-height:64px}
 .amount .cur{font-size:28px;color:var(--ink-2)}
-.amount .val{font-size:52px;font-weight:var(--wb);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1;display:inline-block}
-.amount .val.ph{color:var(--line)}
+.amount .val{font:inherit;font-size:52px;font-weight:var(--wb);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1;display:inline-block;
+  border:0;padding:0;margin:0;background:none;outline:none;color:var(--ink);text-align:left;width:1.4ch;max-width:calc(100% - 40px);caret-color:var(--c);
+  text-decoration:underline 3px transparent;text-underline-offset:10px;transition:text-decoration-color .2s}
+.amount .val::placeholder{color:var(--line);opacity:1}
+.amount .val:focus{text-decoration-color:var(--c-bg)}
+.amount .cur{cursor:text}
 .amount .val.bump{animation:bump .22s var(--ease-out)}
 @keyframes bump{50%{transform:scale(1.06)}}
 .shake{animation:shake .32s}
@@ -495,17 +499,16 @@ input[type=date].field::-webkit-date-and-time-value{text-align:left}
   <div class="grab"></div>
   <h3 id="addTitle">Log expense</h3>
   <div class="picker" id="picker" role="radiogroup" aria-label="Category"></div>
-  <div class="amount" id="amountBox" aria-live="polite"><span class="cur">₱</span><span class="val ph" id="amountVal">0</span></div>
+  <div class="amount" id="amountBox"><label class="cur" for="amountIn">₱</label><input class="val" id="amountIn" inputmode="decimal" enterkeyhint="next" placeholder="0" autocomplete="off" aria-label="Amount"></div>
   <div class="hint" id="addHint"></div>
   <div class="chips" id="chips"></div>
   <div class="paywith" id="payWith" role="radiogroup" aria-label="Paid with"></div>
   <div class="row2">
-    <input class="field" id="noteIn" placeholder="Note (optional)" maxlength="60" autocomplete="off" enterkeyhint="done">
+    <input class="field" id="noteIn" placeholder="Note (optional)" maxlength="60" autocomplete="off" enterkeyhint="done" aria-label="Note">
     <input class="field" id="dateIn" type="date" aria-label="Date">
   </div>
-  <div class="keys" id="keys"></div>
   <button class="ghost" id="editPhoto" hidden style="margin:0 0 8px">Add a photo to Memories</button>
-  <button class="primary" id="saveBtn">Save</button>
+  <div class="stickysave"><button class="primary" id="saveBtn">Save</button></div>
 </section>
 
 <section class="sheet" id="acctSheet" role="dialog" aria-modal="true" aria-labelledby="acctTitle">
@@ -1354,8 +1357,19 @@ function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classL
 
 /* ---------- add expense ---------- */
 let addCat = 'food', amountStr = '';
-$('keys').innerHTML = keypad();
-$('keys').querySelectorAll('.key').forEach(b => b.onclick = () => press(b.dataset.k));
+// the amount field: digits and one dot, up to 6 digits and 2 decimals
+const amtIn = $('amountIn');
+function cleanAmount(raw){
+  let v = String(raw).replace(/[^0-9.]/g, '');
+  const dot = v.indexOf('.'); if(dot >= 0) v = v.slice(0, dot + 1) + v.slice(dot + 1).replace(/\./g, '');
+  let [i, f] = v.split('.'); i = (i || '').replace(/^0+(?=\d)/, '').slice(0, 6);
+  return f !== undefined ? (i || '0') + '.' + f.slice(0, 2) : i;
+}
+amtIn.oninput = () => { const v = cleanAmount(amtIn.value); if(v !== amtIn.value) amtIn.value = v; amountStr = v; showAmount(false, true); };
+// Enter on the amount goes to the note; Enter on the note saves
+amtIn.onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); $('noteIn').focus(); } };
+$('noteIn').onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); $('saveBtn').click(); } };
+$('amountBox').onclick = e => { if(e.target !== amtIn) amtIn.focus(); };
 function keypad(dot = true){
   return ['1','2','3','4','5','6','7','8','9', dot ? '.' : '', '0','⌫'].map(k => k === '' ? '<span></span>' :
     `<button class="key" data-k="${k}" aria-label="${k === '⌫' ? 'Delete digit' : k}">${k === '⌫' ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:auto"><path d="M9 5h11v14H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>' : k}</button>`).join('');
@@ -1387,10 +1401,10 @@ function press(k){
   }
   showAmount(true);
 }
-function showAmount(bump){
-  const v = $('amountVal');
-  if(!amountStr){ v.textContent = '0'; v.classList.add('ph'); }
-  else { const [i, f] = amountStr.split('.'); v.textContent = nf0.format(Number(i || 0)) + (f !== undefined ? '.' + f : ''); v.classList.remove('ph'); }
+function showAmount(bump, typing){
+  const v = amtIn;
+  if(!typing) v.value = amountStr;
+  v.style.width = (Math.max(1, v.value.length) + 0.4) + 'ch';
   if(bump){ v.classList.remove('bump'); void v.offsetWidth; v.classList.add('bump'); }
   const n = Number(amountStr) || 0, c = catOf(addCat);
   $('saveBtn').textContent = editingId ? 'Save changes' : n ? `Save ${peso(n)} to ${c.short}` : 'Save';
@@ -1415,6 +1429,7 @@ function openAdd(cat){
   editingId = null; $('addTitle').textContent = 'Log expense'; $('editPhoto').hidden = true;
   amountStr = ''; $('noteIn').value = ''; $('dateIn').value = defaultDate(); addPay = null;
   drawPicker(); drawPayWith(); showSheet($('addSheet')); setCat(cat || addCat, false);
+  setTimeout(() => amtIn.focus({preventScroll:true}), 350);
 }
 // tap a logbook entry: the same panel, filled in, to change anything or add a photo
 function openEdit(id){
@@ -1431,7 +1446,7 @@ $('editPhoto').onclick = () => {
 $('dateIn').onchange = () => showAmount();
 $('saveBtn').onclick = () => {
   const n = round2(Number(amountStr) || 0);
-  if(n <= 0){ shake($('amountBox')); const h = $('addHint'); h.textContent = 'Enter an amount first'; h.classList.add('err'); return; }
+  if(n <= 0){ shake($('amountBox')); const h = $('addHint'); h.textContent = 'Enter an amount first'; h.classList.add('err'); amtIn.focus(); return; }
   const date = $('dateIn').value || iso(today());
   logTab = 'exp';
   if(editingId){
