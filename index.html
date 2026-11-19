@@ -329,6 +329,10 @@ h2 small{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-
 .amount .val::placeholder{color:var(--line);opacity:1}
 .amount .val:focus{text-decoration-color:var(--c-bg)}
 .amount .cur{cursor:text}
+.noteline{display:block;width:min(100%,300px);margin:0 auto 8px;padding:2px 8px 4px;border:0;border-bottom:2px dashed var(--line);border-radius:0;background:none;outline:none;
+  text-align:center;font-family:var(--hand);font-size:calc(26px * var(--hs));line-height:1.25;color:var(--ink);transition:border-color .2s}
+.noteline::placeholder{color:#8F95B3;opacity:1}
+.noteline:focus{border-bottom-color:var(--c)}
 .amount .val.bump{animation:bump .22s var(--ease-out)}
 @keyframes bump{50%{transform:scale(1.06)}}
 .shake{animation:shake .32s}
@@ -500,13 +504,11 @@ input[type=date].field::-webkit-date-and-time-value{text-align:left}
   <h3 id="addTitle">Log expense</h3>
   <div class="picker" id="picker" role="radiogroup" aria-label="Category"></div>
   <div class="amount" id="amountBox"><label class="cur" for="amountIn">₱</label><input class="val" id="amountIn" inputmode="decimal" enterkeyhint="next" placeholder="0" autocomplete="off" aria-label="Amount"></div>
+  <input class="noteline" id="noteIn" placeholder="what was it for?" maxlength="60" autocomplete="off" enterkeyhint="done" aria-label="Note (optional)">
   <div class="hint" id="addHint"></div>
   <div class="chips" id="chips"></div>
   <div class="paywith" id="payWith" role="radiogroup" aria-label="Paid with"></div>
-  <div class="row2">
-    <input class="field" id="noteIn" placeholder="Note (optional)" maxlength="60" autocomplete="off" enterkeyhint="done" aria-label="Note">
-    <input class="field" id="dateIn" type="date" aria-label="Date">
-  </div>
+  <input class="field" id="dateIn" type="date" aria-label="Date" style="margin-bottom:10px">
   <button class="ghost" id="editPhoto" hidden style="margin:0 0 8px">Add a photo to Memories</button>
   <div class="stickysave"><button class="primary" id="saveBtn">Save</button></div>
 </section>
